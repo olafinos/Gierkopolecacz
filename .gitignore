@@ -1,4 +1,7 @@
 dane.json
 dump-2022-07-26.csv
-/venv
-/gierkopolecacz/gierkopolecacz/__pycache__/setting.cpython-39.pyc
+venv
+*.pyc
+/dist/
+*.egg-info
+.cache
