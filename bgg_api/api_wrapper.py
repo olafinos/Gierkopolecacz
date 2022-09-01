@@ -54,7 +54,8 @@ class BGGApiWrapper:
             response = requests.get(self.bgg_games_url+dump_name)
             if response.status_code == 200:
                 dump_filename = f'dump-{dump_name}'
-                open(dump_filename, 'wb').write(response.content)
+                with open(dump_filename, 'wb') as file:
+                    file.write(response.content)
                 return dump_filename
             else:
                 current_date = current_date - datetime.timedelta(days=1)
@@ -110,8 +111,8 @@ class BGGApiWrapper:
             soup = BeautifulSoup(game_info, features='xml')
             result['game_name'] = _get_tag_value(tag_name="name", soup=soup, **{"type": "primary"})
             result['year_published'] = _get_tag_value(tag_name="yearpublished", soup=soup)
-            result['min_players '] = _get_tag_value(tag_name="minplayers", soup=soup)
-            result['max_players '] = _get_tag_value(tag_name="maxplayers", soup=soup)
+            result['min_players'] = _get_tag_value(tag_name="minplayers", soup=soup)
+            result['max_players'] = _get_tag_value(tag_name="maxplayers", soup=soup)
             result['playing_time'] = _get_tag_value(tag_name="playingtime", soup=soup)
             result['alternate_name'] = _get_tag_list_values(tag_name='name', soup=soup, **{"type": "alternate"})
             result['categories'] = _get_tag_list_values(tag_name='link', soup=soup, **{"type": "boardgamecategory"})
@@ -119,6 +120,7 @@ class BGGApiWrapper:
             return result
 
         game_info = self._request_game_info_using_api(game_id)
+        print(game_info)
         if isinstance(game_info, dict):
             return game_info
         processed_game_info = _process_game_info(game_info)
@@ -161,7 +163,3 @@ class BGGApiWrapper:
             while '' in game['categories']:
                 game['categories'].remove('')
         return result
-
-
-b = BGGApiWrapper()
-info, games_with_errors = b.import_data_to_database(35)
