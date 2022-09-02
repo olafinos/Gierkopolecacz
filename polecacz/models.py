@@ -13,15 +13,15 @@ class GameTag(TaggedItemBase):
 
 class Game(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    game_id = models.CharField(max_length=35)
-    rank = models.IntegerField()
-    rating = models.FloatField()
+    game_id = models.CharField(max_length=35, null=True)
+    rank = models.IntegerField(null=True)
+    rating = models.FloatField(null=True)
     thumbnail = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
     year_published = models.CharField(max_length=4)
-    min_players = models.IntegerField()
-    max_players = models.IntegerField()
-    playing_time = models.IntegerField()
+    min_players = models.IntegerField(null=True)
+    max_players = models.IntegerField(null=True)
+    playing_time = models.IntegerField(null=True)
     tags = TaggableManager(through=GameTag)
 
 
