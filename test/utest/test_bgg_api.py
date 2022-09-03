@@ -1,15 +1,13 @@
 import datetime
-import pytest
-
 
 from unittest.mock import patch, Mock, mock_open
 
-from bgg_api.api_wrapper import BGGApiWrapper
+from polecacz.bgg_api.api_wrapper import BGGApiWrapper
 
 BGG_WRAPPER = BGGApiWrapper()
 
 
-@patch('bgg_api.api_wrapper.requests.get')
+@patch('polecacz.bgg_api.api_wrapper.requests.get')
 def test_get_games_csv_successfully(mocked_get):
     mocked_response = Mock()
     mocked_get.return_value = mocked_response
@@ -23,7 +21,7 @@ def test_get_games_csv_successfully(mocked_get):
     writer.write.assert_called_once_with(b'test123')
 
 
-@patch('bgg_api.api_wrapper.requests.get')
+@patch('polecacz.bgg_api.api_wrapper.requests.get')
 def test_get_games_csv_unsuccessfully(mocked_get):
     mocked_response = Mock()
     mocked_get.return_value = mocked_response
@@ -47,7 +45,7 @@ def test_get_games_info_from_csv_file():
     assert info[0]['thumbnail'] == 'https://url1.jpg'
 
 
-@patch('bgg_api.api_wrapper.requests.get')
+@patch('polecacz.bgg_api.api_wrapper.requests.get')
 def test_get_game_information_using_id(mocked_get):
     mocked_response = Mock()
     mocked_get.return_value = mocked_response

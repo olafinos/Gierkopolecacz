@@ -6,7 +6,7 @@ from typing import Union
 import requests
 from bs4 import BeautifulSoup
 
-from bgg_api import MECHANICS_MAP,CATEGORIES_MAP
+from polecacz.bgg_api import MECHANICS_MAP,CATEGORIES_MAP
 
 
 
@@ -16,7 +16,7 @@ class BGGApiWrapper:
         self.api_url = 'https://boardgamegeek.com/xmlapi2/'
         self.bgg_games_url = 'https://raw.githubusercontent.com/beefsack/bgg-ranking-historicals/master/'
 
-    def import_data_to_database(self, number_of_games: int = None):
+    def prepare_data_to_import_to_database(self, number_of_games: int = None) -> tuple[list[dict],list[dict]]:
         result = []
         games_with_errors = []
         counter = 1
@@ -120,7 +120,6 @@ class BGGApiWrapper:
             return result
 
         game_info = self._request_game_info_using_api(game_id)
-        print(game_info)
         if isinstance(game_info, dict):
             return game_info
         processed_game_info = _process_game_info(game_info)

@@ -24,6 +24,9 @@ class Game(models.Model):
     playing_time = models.IntegerField(null=True)
     tags = TaggableManager(through=GameTag)
 
+    def __str__(self):
+        return f'{self.name}, Tags: {self.tags.names()}'
+
 
 class Opinion(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
