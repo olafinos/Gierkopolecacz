@@ -1,15 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Game Detail</title>
-</head>
-<body>
-    <h1>{{ game.name }}</h1>
-    <ul>
-        {% for tag in game.tags.all %}
-        <li>{{ tag.name }}</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends 'polecacz/base.html' %}
+{% load static %}
+{% block title %}{{ game.name }}{% endblock %}
+{% block content %}
+<h2>Detale gry</h2>
+    <div class="container p-3 my-3" style="border:2px solid #38220f;">
+        <div class="media">
+<!--        <img src={{ game.image.url }} class="align-self-start mr-3" style="border:2px solid #38220f;width:130px;height:130px"/>-->
+   <div class="media-body">
+       <h4 class="mt-0">{{ game.name }}</h4>
+       <h6 class="mt-0"><strong>Ranking: </strong>{{ game.rank }}</h6>
+       <h6 class="mt-0"><strong>Średnia ocen: </strong>{{ game.rating|floatformat:-2 }}</h6>
+       <h6 class="mt-0"><strong>Rok wydania: </strong>{{ game.year_published }}</h6>
+       <h6 class="mt-0"><strong>Minimalna liczba graczy: </strong>{{ game.min_players  }}</h6>
+       <h6 class="mt-0"><strong>Maksymalna liczba graczy: </strong>{{ game.max_players  }}</h6>
+       <h6 class="mt-0"><strong>Średni czas gry: </strong>{{ game.playing_time  }}</h6>
+    <p><strong>Mechaniki i kategorie zawarte w grze: </strong>
+        <ul>
+        {% for tag in game.tags.names %}
+            <li>{{ tag }}</li>
+        {% endfor %}</ul>
+       </p>
+  </div>
+    </div>
+    </div>
+{% endblock %}
