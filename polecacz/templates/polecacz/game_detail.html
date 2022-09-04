@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Detail</title>
+</head>
+<body>
+    <h1>{{ game.name }}</h1>
+    <ul>
+        {% for tag in game.tags.all %}
+        <li>{{ tag.name }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

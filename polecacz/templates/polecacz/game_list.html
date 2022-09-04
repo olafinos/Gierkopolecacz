@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Games List</title>
+</head>
+<body>
+
+{% if games_list %}
+    <ul>
+    {% for game in games_list %}
+        <li><a href="{% url 'polecacz:game_detail' game.id %}">{{ game.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No games are available.</p>
+{% endif %}
+
+</body>
+</html>
