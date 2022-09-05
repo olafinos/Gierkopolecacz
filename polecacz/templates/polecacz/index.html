@@ -2,8 +2,20 @@
 {% load static %}
 {% block title %}GierkoPolecacz{% endblock %}
 {% block content %}
+<div class="container-fluid text-center">
+    <h1 class="display-4">Witaj {% if user.is_authenticated %} {{user.username}} {% endif %}</h1>
+<!--    <img src="/static/image/Logo.png" style="width:532px;height:480px">-->
+
+    {% if not user.is_authenticated %}
+    <h3>Gierkopolecacz jest aplikacją pomagająca w wyborze gier planszowych na podstawie ponadych przez Ciebie preferencji.</h3>
+    <h3>Sprawdź jak działa i <a href="{% url 'signup' %}" class="text-muted">załóż darmowe konto</a>.</h3>
+    {% else %}
+    <h3>Poszukajmy wspólnie nowych gier.</h3>
+    <h3>Przejdź do widoku szukania.</h3>
+    {% endif %}
+</div>
 <div class="container-fluid">
-    <center><h1 class="display-4">Top games</h1></center>
+    <center><h1 class="display-4">Najwyżej oceniane gry</h1></center>
         <div class="container-fluid">
         <div class="row">
             {% for game in top_games %}
@@ -22,11 +34,5 @@
             {% endfor %}
         </div>
     </div>
-</div>
-<div class="container-fluid text-center">
-    <h1 class="display-4">Witaj</h1>
-<!--    <img src="/static/image/Logo.png" style="width:532px;height:480px">-->
-    <h3>Gierkopolecacz jest aplikacją pomagająca w wyborze gier planszowych na podstawie ponadych przez Ciebie preferencji.</h3>
-    <h3>Sprawdź jak działa i <a href="{% url 'polecacz:signup' %}" class="text-muted">załóż darmowe konto</a>.</h3>
 </div>
 {% endblock %}
