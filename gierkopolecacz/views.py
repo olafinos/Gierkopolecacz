@@ -84,5 +84,8 @@ def activate(request, uidb64, token):
 
 
 def logout_view(request):
+    """
+    Allows user to logout
+    """
     logout(request)
     return redirect('polecacz/')
