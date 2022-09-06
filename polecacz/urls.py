@@ -8,4 +8,5 @@ urlpatterns = [
     path('game/', views.GameListView.as_view(), name='game_list'),
     path('game/<uuid:pk>/', views.GameDetailView.as_view(), name='game_detail'),
     path('opinion/<uuid:pk>/', views.OpinionDetail.as_view(), name='opinion_detail'),
+    path('game_search/', views.game_search)
 ]

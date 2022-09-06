@@ -1,3 +1,5 @@
+from smtplib import SMTPAuthenticationError
+
 from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.contrib.auth import logout, get_user_model
@@ -28,8 +30,11 @@ def signup(request):
             activate_email(request, user, form.cleaned_data.get('email'))
             return redirect('/polecacz/')
         else:
-            for error in list(form.errors.values()):
-                print(request, error)
+            return render(
+                request=request,
+                template_name="./registration/signup.html",
+                context={"form": form}
+            )
     else:
         form = UserRegistrationForm()
     return render(
@@ -51,14 +56,17 @@ def activate_email(request, user, to_email):
         'token': account_activation_token.make_token(user),
         'protocol': 'https' if request.is_secure() else 'http'
     })
-    email = EmailMessage(mail_subject, message, to=[to_email])
-    if email.send():
-        messages.success(request, f'<b>{user}</b>, proszę sprawdź swoją skrzynkę odbiorczą dla adresu <b>{to_email}</b> i kliknij w \
-            otrzymany link aktywacyjny aby potwierdzić oraz ukończyć rejestracje. <b>Uwaga:</b> Sprawdź swój spam.')
-    else:
+    try:
+        email = EmailMessage(mail_subject, message, to=[to_email])
+        if email.send():
+            messages.success(request, f'<b>{user}</b>, proszę sprawdź swoją skrzynkę odbiorczą dla adresu <b>{to_email}</b> i kliknij w \
+                otrzymany link aktywacyjny aby potwierdzić oraz ukończyć rejestracje. <b>Uwaga:</b> Sprawdź swój spam.')
+        else:
+            messages.error(request, 'Wystąpił problem z wysyłaniem mailu z linkiem aktywacyjnym. '
+                                    'Proszę sprawdź, czy prawidłowo został wpisany adres e-mail.')
+    except SMTPAuthenticationError:
         messages.error(request, 'Wystąpił problem z wysyłaniem mailu z linkiem aktywacyjnym. '
-                                'Proszę sprawdź, czy prawidłowo został wpisany adres e-mail.')
-
+                                'W celu weryfikacji skontaktuj się z administratorem')
 
 def activate(request, uidb64, token):
     """
@@ -80,7 +88,7 @@ def activate(request, uidb64, token):
     else:
         messages.error(request, 'Link aktywacyjny jest niepoprawny!')
 
-    return redirect('homepage')
+    return redirect('polecacz/')
 
 
 def logout_view(request):

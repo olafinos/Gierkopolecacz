@@ -2,7 +2,8 @@
 {% load static %}
 {% block title %}Lista gier{% endblock %}
 {% block content %}
-<h2>Lista gier</h2>
+<center><h2>Lista gier</h2></center>
+<br>
 <label><strong>Kolejność sortowania:</strong></label>
 <div class="btn-group" role="group">
     <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -17,6 +18,34 @@
         <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=-rating">Średnia malejąco</a>
     </div>
   </div>
+<script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
+
+<form action="{% url 'polecacz:game_list' %}" method="get">
+    <div class="container mt-3 pt-6 col-md-10">
+
+        <div id="autocomplete" class="autocomplete">
+            <input name='game' type='text' placeholder="Wyszukaj gre po nazwie" class="autocomplete-input" />
+            <ul class="autocomplete-result-list"></ul>
+        </div>
+
+    </div>
+</form>
+
+<script>
+        new Autocomplete('#autocomplete', {
+
+            search: input => {
+                console.log(input)
+                const url = `/polecacz/game_search/?game=${input}`
+                return new Promise(resolve => {
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            resolve(data.data)
+                        })
+                })
+            }})
+</script>
 
 {% for game in games_list %}
     <div class="container p-3 my-3" style="border:2px solid #38220f;">
@@ -45,7 +74,5 @@
       {% endif %}
   </ul>
 </nav>
-{% else %}
-    <p>Nie znaleziono gier(</p>
 {% endif %}
 {% endblock %}

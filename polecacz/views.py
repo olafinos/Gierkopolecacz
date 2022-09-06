@@ -1,4 +1,4 @@
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import render
 from django.views import generic
 
@@ -45,7 +45,27 @@ class GameListView(generic.ListView):
         context['order_name'] = order_name
         return context
 
+    def get_queryset(self):
+        game = self.request.GET.get('game', None)
+        if game:
+            object_list = Game.objects.filter(name__icontains=game)
+            return object_list
+        else:
+            return super(GameListView, self).get_queryset()
+
 
 class OpinionDetail(generic.DetailView):
     model = Opinion
     template_name = 'polecacz/opinion_detail.html'
+
+
+def game_search(request):
+    game = request.GET.get('game')
+    payload = []
+    if game:
+        games_objs = Game.objects.filter(name__icontains=game)
+
+        for game_obj in games_objs:
+            payload.append(game_obj.name)
+
+    return JsonResponse({'status': 200, 'data': payload})
