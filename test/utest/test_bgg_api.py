@@ -70,6 +70,8 @@ class BggApiTests(TestCase):
                                     <link type="boardgamecategory" id="1047" value="Miniatures" />
                                     <link type="boardgamemechanic" id="2689" value="Action Queue" />
                                     <link type="boardgamemechanic" id="2839" value="Action Retrieval" />
+                                    <link type="boardgameartist" id="2839" value="artist" />
+                                    <link type="boardgamedesigner" id="2839" value="designer" />
                                     </item>
                                     </items>"""
         game_info = BGG_WRAPPER._get_game_information_using_id(1)
@@ -81,6 +83,8 @@ class BggApiTests(TestCase):
         assert game_info['alternate_name'] == ['Gra1']
         assert game_info['categories'] == ['Adventure', 'Exploration', 'Fantasy', 'Fighting', 'Miniatures']
         assert game_info['mechanics'] == ['Action Queue', 'Action Retrieval']
+        assert game_info['designer'] == 'designer'
+        assert game_info['artist'] == 'artist'
 
     def test_map_fields_to_polish_equivalent(self):
         game_info = [{'mechanics': [], 'categories': []},

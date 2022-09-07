@@ -14,6 +14,8 @@ class GameTag(TaggedItemBase):
 class Game(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     game_id = models.CharField(max_length=35, null=True)
+    artist = models.CharField(max_length=350, null=True)
+    designer = models.CharField(max_length=350, null=True)
     rank = models.IntegerField(null=True)
     rating = models.FloatField(null=True)
     thumbnail = models.CharField(max_length=200)
@@ -34,3 +36,9 @@ class Opinion(models.Model):
     rating = models.FloatField()
     description = models.TextField(max_length=500)
     recommendation_id = models.IntegerField()
+
+
+class SelectedGames(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    selected_games = models.ManyToManyField(Game)

@@ -93,6 +93,14 @@ class BGGApiWrapper:
             tag = soup.items.item.find(tag_name, kwargs)
             return tag.get('value')
 
+        def _get_tag(tag_name: str, soup: BeautifulSoup,  **kwargs) -> str:
+            """
+            Get tag value from XML object
+            :return: XML tag value
+            """
+            tag = soup.items.item.find(tag_name, kwargs)
+            return tag.string
+
         def _get_tag_list_values(tag_name: str, soup: BeautifulSoup, **kwargs) -> list[str]:
             """
             Get list with tag values from XML object
@@ -117,6 +125,11 @@ class BGGApiWrapper:
             result['alternate_name'] = _get_tag_list_values(tag_name='name', soup=soup, **{"type": "alternate"})
             result['categories'] = _get_tag_list_values(tag_name='link', soup=soup, **{"type": "boardgamecategory"})
             result['mechanics'] = _get_tag_list_values(tag_name='link', soup=soup, **{"type": "boardgamemechanic"})
+            result['designer'] = ", ".join(_get_tag_list_values(tag_name='link', soup=soup, **{"type": "boardgamedesigner"}))
+            result['artist'] = ", ".join(_get_tag_list_values(tag_name='link', soup=soup, **{"type": "boardgameartist"}))
+            thumbnail = _get_tag(tag_name="thumbnail", soup=soup)
+            if thumbnail:
+                result['thumbnail'] = thumbnail
             return result
 
         game_info = self._request_game_info_using_api(game_id)

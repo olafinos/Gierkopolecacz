@@ -14,19 +14,21 @@
     <h3>Przejdź do widoku szukania.</h3>
     {% endif %}
 </div>
+<br>
 <div class="container-fluid">
     <center><h1 class="display-4">Najwyżej oceniane gry</h1></center>
         <div class="container-fluid">
         <div class="row">
             {% for game in top_games %}
             <div class="col-md">
-                <div class="container p-3 my-3" style="border:2px solid #38220f;">
+                <div class="container p-4 my-4" style="border:2px solid #31220f;">
                     <div class="media">
-<!--                        <img src={{ game.image.url }} class="align-self-start mr-3" style="border:2px solid #38220f;width:130px;height:130px"/>-->
+                        <img src={{ game.thumbnail }} class="align-self-start mr-3" style="border:2px solid #38220f;width:200px;height:150px"/>
                         <div class="media-body">
-                            <center><h4 class="mt-0"><a href="{% url 'polecacz:game_detail' game.id %}" class="text-muted">{{ game.name }}</a></h4></center>
+                            <h5 class="mt-0"><a href="{% url 'polecacz:game_detail' game.id %}" class="text-muted">{{ game.name }}</a></h5>
                             <h6 class="mt-0"><strong>Średnia ocen: </strong>{{ game.rating|floatformat:-2 }}</h6>
                             <h6 class="mt-0"><strong>Ranking: </strong>{{ game.rank }}</h6>
+                            <h6 class="mt-0"><strong>Rok wydania: </strong>{{ game.year_published }}</h6>
                         </div>
                     </div>
                 </div>
