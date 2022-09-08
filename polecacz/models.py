@@ -38,6 +38,16 @@ class Opinion(models.Model):
     recommendation_id = models.IntegerField()
 
 
+class Recommendation(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    selected_games = models.ManyToManyField(Game, related_name='selected_games')
+    recommended_games = models.ManyToManyField(Game, related_name='recommended_games')
+    opinion_created = models.BooleanField(default=False, null=True)
+    creation_date = models.DateTimeField(auto_now_add=True)
+
+
 class SelectedGames(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)

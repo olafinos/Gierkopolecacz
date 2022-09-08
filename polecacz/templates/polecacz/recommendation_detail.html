@@ -2,11 +2,11 @@
 {% load static %}
 {% block title %}Lista gier{% endblock %}
 {% block content %}
-<center><h2>Lista wybranych przez Ciebie gier</h2></center>
+<center><h2>Oto Twoje rekomendacje</h2></center>
 <br>
+<center><h4>Poniższe gry posiadają najwięcej cech wspólnych z grami wybranym przez Ciebie.</h4></center>
+<center><h4>Zostaw proszę <a href="{% url 'polecacz:create_opinion' recommendation.id">opinię</a> w celu poprawy przyszłych rekomendacji.</h4></center>
 <br>
-<center><h4>Wygląda na to, że nie wybrano jeszcze żadnych gier. Wybierz je proszę przechodząc do widoku <a href="{% url 'polecacz:game_list' %}" class="text-muted">listy gier</a></h4></center>
-
 {% for game in recommended_games %}
     <div class="container p-3 my-3" style="border:2px solid #38220f;">
         <div class="media">

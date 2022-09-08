@@ -40,7 +40,7 @@
       </li>
       {% if user.is_authenticated %}
       <li class="nav-item">
-             <a class="nav-link" href="{% url 'polecacz:index' %}">Moje opinie</a>
+             <a class="nav-link" href="{% url 'polecacz:recommendation_list' %}">Moje rekomendacje</a>
       </li>
         <li class="nav-item">
              <a class="nav-link" href="{% url 'polecacz:selected_games' %}">Wybrane gry <span class="badge badge-light">{{ request.user|selected_games_count }} </span></a>
@@ -61,8 +61,8 @@
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'login' %}">Zaloguj się</a>
-      {% endif %}
       </li>
+        {% endif %}
     </ul>
   </div>
 </nav>

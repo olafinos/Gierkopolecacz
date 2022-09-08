@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import generic
 
-from polecacz.models import Game, Opinion, SelectedGames
+from polecacz.models import Game, Opinion, SelectedGames, Recommendation
 from polecacz.service import PolecaczService
 
 ORDER_MAPPING = {
@@ -90,21 +90,29 @@ class SelectedGamesListView(LoginRequiredMixin, generic.ListView):
         return selected_games_object.selected_games.all()
 
 
-class RecommendationsView(generic.ListView):
-    template_name = 'polecacz/recommendations.html'
-    context_object_name = 'recommended_games'
+class RecommendationDetailView(LoginRequiredMixin, generic.DetailView):
+    model = Recommendation
+    template_name = 'polecacz/recommendation_detail.html'
+    login_url = '/login/'
+    context_object_name = 'games'
+
+    def get_context_data(self, **kwargs):
+        context = super(RecommendationDetailView, self).get_context_data(**kwargs)
+        recommendation = Recommendation.objects.get(id = self.kwargs['pk'])
+        context['recommended_games'] = recommendation.recommended_games.all()
+        context['selected_games'] = recommendation.selected_games.all()
+        return context
+
+
+class RecommendationListView(LoginRequiredMixin, generic.ListView):
+    model = Recommendation
+    template_name = 'polecacz/recommendation_list.html'
+    login_url = '/login/'
+    context_object_name = 'recommendations'
 
     def get_queryset(self):
-        selected_games_obj = SelectedGames.objects.get(user=self.request.user)
-        games = selected_games_obj.selected_games.all()
-        games_ids = list(games.values_list('id', flat=True))
-        tag_list = []
-        for game in games:
-            for tag in game.tags.values_list('name', flat=True):
-                tag_list.append(tag)
-        recommended_games = PolecaczService.find_most_similar_games(list(set(tag_list)))
-        recommended_games = recommended_games.exclude(id__in=games_ids)
-        return recommended_games[:20]
+        recommendation_objects = Recommendation.objects.all().order_by('-creation_date')
+        return recommendation_objects
 
 
 class OpinionDetail(LoginRequiredMixin, generic.DetailView):
@@ -154,3 +162,22 @@ def remove_from_selected_games(request, game_id):
         return redirect("/polecacz/selected_games")
     return redirect(_build_url_with_pagination_and_order(reverse_lazy("polecacz:game_list"), request))
 
+@login_required
+def create_recommendation(request):
+    selected_games_obj = SelectedGames.objects.get(user=request.user)
+    recommendation_object = Recommendation.objects.create(user=request.user)
+    games = selected_games_obj.selected_games.all()
+    games_ids = list(games.values_list('id', flat=True))
+    tag_list = []
+    for game in games:
+        recommendation_object.selected_games.add(game)
+        for tag in game.tags.values_list('name', flat=True):
+            tag_list.append(tag)
+    recommended_games_query = PolecaczService.find_most_similar_games(list(set(tag_list)))
+    recommended_games_query = recommended_games_query.exclude(id__in=games_ids)
+    for game in recommended_games_query[:20]:
+        recommendation_object.recommended_games.add(game)
+    recommendation_object.save()
+    selected_games_obj.selected_games.clear()
+    selected_games_obj.save()
+    return redirect("polecacz:recommendation_detail", recommendation_object.id)
