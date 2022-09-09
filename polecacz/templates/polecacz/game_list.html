@@ -14,14 +14,14 @@
         <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=-rank">Ranking malejąco</a>
         <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=name">Alfabetycznie A-Z</a>
         <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=-name">Alfabetycznie Z-A</a>
-        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=rating">Średnia rosnąco</a>
-        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=-rating">Średnia malejąco</a>
+        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=rating">Średnia ocen rosnąco</a>
+        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=-rating">Średnia ocen malejąco</a>
     </div>
   </div>
 <script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
 
 <form action="{% url 'polecacz:game_list' %}" method="get">
-    <div class="container mt-3 pt-6 col-md-10">
+    <div class="container mt-4 pt-10 col-md-12">
 
         <div id="autocomplete" class="autocomplete">
             <input name='game' type='text' placeholder="Wyszukaj gre po nazwie" class="autocomplete-input" />
@@ -29,6 +29,7 @@
         </div>
 
     </div>
+    <br>
     <center>
     <button type="submit" class="btn btn-dark col-2">Szukaj</button>
     </center>

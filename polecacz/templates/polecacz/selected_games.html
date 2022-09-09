@@ -6,7 +6,10 @@
 <br>
 {% if games_list %}
     <center>
-        <a href="{% url 'polecacz:create_recommendation' %}" class="btn btn-outline-success bn-dark"><strong>Utwórz rekomendacje</strong></a>
+        <form action="{% url 'polecacz:create_recommendation' %}" method="post">
+            {% csrf_token %}
+            <button type='submit' class="btn btn-outline-success bn-dark"><strong>Utwórz rekomendacje</strong></button>
+        </form>
     </center>
 {% else %}
     <br>

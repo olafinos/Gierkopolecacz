@@ -1,6 +1,7 @@
 import uuid
 
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from taggit.managers import TaggableManager
 from taggit.models import TaggedItemBase
@@ -30,14 +31,6 @@ class Game(models.Model):
         return f'{self.name}, Tags: {self.tags.names()}'
 
 
-class Opinion(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    rating = models.FloatField()
-    description = models.TextField(max_length=500)
-    recommendation_id = models.IntegerField()
-
-
 class Recommendation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
@@ -52,3 +45,11 @@ class SelectedGames(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     selected_games = models.ManyToManyField(Game)
+
+
+class Opinion(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    rating = models.IntegerField(validators=[MaxValueValidator(10), MinValueValidator(1)])
+    description = models.TextField(max_length=500)
+    recommendation = models.ForeignKey(Recommendation, on_delete=models.CASCADE)

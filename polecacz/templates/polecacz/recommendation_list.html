@@ -12,7 +12,9 @@
            <h4 class="mt-0">Utworzona: <a href="{% url 'polecacz:recommendation_detail' recommendation_obj.id %}" class="text-muted" >{{ recommendation_obj.creation_date }}</a></h4>
       </div>
                 {% if not recommendation_obj.opinion_created %}
-                <a href="{% url 'polecacz:create_opinion' recommendation_obj.id %}" class="btn btn-outline-success add-btn"><strong>Dodaj opinię dla rekomendacji</strong></a>
+                <a href="{% url 'polecacz:create_opinion' recommendation_obj.id %}" class="btn btn-primary add-btn"><strong>Dodaj opinię dla rekomendacji</strong></a>
+                {% else %}
+                <button type="button" class="btn btn-outline-primary" disabled>Opinia została już dodana</button>
                 {% endif %}
             </div>
         </div>
