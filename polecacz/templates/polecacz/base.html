@@ -25,6 +25,41 @@
   <body>
   <style type="text/css">
    body { background: #dbc1ac !important; }
+   .dropdown-menu {
+    max-height: 280px;
+    overflow-y: auto;
+    }
+    .checkbox-menu li label {
+        display: block;
+        padding: 3px 10px;
+        clear: both;
+        font-weight: normal;
+        line-height: 1.42857143;
+        color: #333;
+        white-space: nowrap;
+        margin:0;
+        transition: background-color .4s ease;
+    }
+    .checkbox-menu li input {
+        margin: 0px 5px;
+        top: 2px;
+        position: relative;
+    }
+
+    .checkbox-menu li.active label {
+        background-color: #cbcbff;
+        font-weight:bold;
+    }
+
+    .checkbox-menu li label:hover,
+    .checkbox-menu li label:focus {
+        background-color: #f5f5f5;
+    }
+
+    .checkbox-menu li.active label:hover,
+    .checkbox-menu li.active label:focus {
+        background-color: #b8b8ff;
+    }
   </style>
   <nav class="navbar navbar-expand-lg navbar-dark" style="background: #cba32a">
   <a class="navbar-brand" href="{% url 'polecacz:index' %}"><h5>GierkoPolecacz</h5></a>

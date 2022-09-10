@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views import generic
 
+from polecacz.bgg_api import CATEGORIES_MAP, MECHANICS_MAP
 from polecacz.forms import OpinionForm
 from polecacz.models import Game, Opinion, SelectedGames, Recommendation
 from polecacz.service import PolecaczService
@@ -52,6 +53,8 @@ class GameListView(LoginRequiredMixin, generic.ListView):
     paginate_by = 10
     ordering = ['rank']
     order_mapping = ORDER_MAPPING
+    categories = list(CATEGORIES_MAP.values())
+    mechanics = list(MECHANICS_MAP.values())
 
     def get_ordering(self):
         ordering = self.request.GET.get('ordering', 'rank')
@@ -69,16 +72,36 @@ class GameListView(LoginRequiredMixin, generic.ListView):
             context['selected_games'] = []
         context['ordering'] = ordering
         context['order_name'] = order_name
+        context['mechanics'] = self.mechanics
+        context['categories'] = self.categories
+        context['selected_categories'] = self.request.GET.getlist('selected_categories', [])
+        context['selected_mechanics'] = self.request.GET.getlist('selected_mechanics', [])
+        context['game'] = self.request.GET.get('game', '')
         return context
 
     def get_queryset(self):
-        game = self.request.GET.get('game', None)
-        if game:
+        game = self.request.GET.get('game', '')
+        tags = self.request.GET.getlist('selected_categories', [])
+        tags.extend(self.request.GET.getlist('selected_mechanics', []))
+        if game or tags:
             object_list = Game.objects.filter(name__icontains=game)
-            return object_list
+            for tag in tags:
+                object_list = object_list.filter(tags__name__contains=tag)
+            return object_list.order_by(self.request.GET.get('ordering', 'rank'))
         else:
             return super(GameListView, self).get_queryset()
 
+
+        # objects_list = Game.objects.all()
+        # if game:
+        #     objects_list = objects_list.filter(name__icontains=game)
+        # elif tags:
+        #     for tag in tags:
+        #         objects_list = objects_list.filter(tags__name__contains=tag)
+        # elif game or tags:
+        #     return objects_list
+        # else:
+        #     return super(GameListView, self).get_queryset()
 
 class SelectedGamesListView(LoginRequiredMixin, generic.ListView):
     model = SelectedGames

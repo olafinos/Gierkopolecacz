@@ -26,13 +26,13 @@
 <nav aria-label="Page navigation">
   <ul class="pagination justify-content-end">
        {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="{% url 'polecacz:selected_games' %}?ordering={{ordering}}&page={{ page_obj.previous_page_number }}">Poprzednia</a></li>
-            <li class="page-item"><a class="page-link" href="{% url 'polecacz:selected_games' %}?ordering={{ordering}}&page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a></li>
+            <li class="page-item"><a class="page-link" href="{% url 'polecacz:recommendation_list' %}?page={{ page_obj.previous_page_number }}">Poprzednia</a></li>
+            <li class="page-item"><a class="page-link" href="{% url 'polecacz:recommendation_list' %}?&page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a></li>
        {% endif %}
-    <li class="page-item active"><a class="page-link" href="{% url 'polecacz:selected_games' %}?ordering={{ordering}}&page={{ page_obj.number }}">{{ page_obj.number }}</a></li>
+    <li class="page-item active"><a class="page-link" href="{% url 'polecacz:recommendation_list' %}?page={{ page_obj.number }}">{{ page_obj.number }}</a></li>
       {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="{% url 'polecacz:selected_games' %}?ordering={{ordering}}&page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a></li>
-        <li class="page-item"><a class="page-link" href="{% url 'polecacz:selected_games' %}?ordering={{ordering}}&page={{ page_obj.next_page_number }}">Następna</a></li>
+        <li class="page-item"><a class="page-link" href="{% url 'polecacz:recommendation_list' %}?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a></li>
+        <li class="page-item"><a class="page-link" href="{% url 'polecacz:recommendation_list' %}?page={{ page_obj.next_page_number }}">Następna</a></li>
       {% endif %}
   </ul>
 </nav>
