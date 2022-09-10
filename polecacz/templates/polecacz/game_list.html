@@ -10,12 +10,12 @@
       {{ order_name }}
     </button>
     <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=rank&page={{ page_obj.number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Ranking rosnąco</a>
-        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=-rank&page={{ page_obj.number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Ranking malejąco</a>
-        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=name&page={{ page_obj.number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Alfabetycznie A-Z</a>
-        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=-name&page={{ page_obj.number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Alfabetycznie Z-A</a>
-        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=rating&page={{ page_obj.number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Średnia ocen rosnąco</a>
-        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=-rating&page={{ page_obj.number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Średnia ocen malejąco</a>
+        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=rank&page={{ page_obj.number }}&game_name={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Ranking rosnąco</a>
+        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=-rank&page={{ page_obj.number }}&game_name={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Ranking malejąco</a>
+        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=name&page={{ page_obj.number }}&game_name={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Alfabetycznie A-Z</a>
+        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=-name&page={{ page_obj.number }}&game_name={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Alfabetycznie Z-A</a>
+        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=rating&page={{ page_obj.number }}&game_name={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Średnia ocen rosnąco</a>
+        <a class="dropdown-item" href="{% url 'polecacz:game_list' %}?ordering=-rating&page={{ page_obj.number }}&game_name={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Średnia ocen malejąco</a>
     </div>
   </div>
 <br>
@@ -42,7 +42,7 @@ $(document).on('click', '.allow-focus', function (e) {
         <input type="checkbox" name="selected_categories" value="{{category}}" {% if category in selected_categories %} checked {% endif %}> {{category}}
       </label>
     </li>
-                {% endfor %}
+        {% endfor %}
   </ul>
   </div>
 <div class="btn-group" role="group">
@@ -59,19 +59,21 @@ $(document).on('click', '.allow-focus', function (e) {
         {% endfor %}
     </ul>
   </div>
+
 <script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
 
-<!--<form action="{% url 'polecacz:game_list' %}" method="get">-->
     <div class="container mt-4 pt-10 col-md-12">
 
         <div id="autocomplete" class="autocomplete">
-            <input name='game' type='text' placeholder="Wyszukaj gre po nazwie" class="autocomplete-input" />
+            <input name='game_name' type='text' placeholder="Wyszukaj gre po nazwie" class="autocomplete-input" />
             <ul class="autocomplete-result-list"></ul>
         </div>
 
     </div>
     <br>
     <center>
+        <input type="hidden" name="ordering" value="{{ ordering }}">
+        <input type="hidden" name="page" value="{{ page_obj.number }}">
     <button type="submit" class="btn btn-dark col-2">Szukaj</button>
     </center>
 </form>
@@ -81,7 +83,7 @@ $(document).on('click', '.allow-focus', function (e) {
 
             search: input => {
                 console.log(input)
-                const url = `/polecacz/game_search/?game=${input}`
+                const url = `/polecacz/game_search/?game_name=${input}`
                 return new Promise(resolve => {
                     fetch(url)
                         .then(response => response.json())
@@ -105,10 +107,10 @@ $(document).on('click', '.allow-focus', function (e) {
        <h6 class="mt-0"><strong>Maksymalna liczba graczy: </strong>{{ game.max_players  }}</h6>
   </div>
             {% if not game in selected_games %}
-            <a href="{% url 'polecacz:add_game' game.id %}?ordering={{ordering}}&page={{ page_obj.number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}" class="btn btn-outline-success add-btn"><strong>Dodaj grę do listy preferencji</strong></a>
+            <a href="{% url 'polecacz:add_game' game.id %}?ordering={{ordering}}&page={{ page_obj.number }}&game_name={{ game_name }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}" class="btn btn-outline-success add-btn"><strong>Dodaj grę do listy preferencji</strong></a>
             {% else %}
  <button class="btn btn-outline-primary mr-1" disabled><strong>Ta gra została już dodana</strong></button>
-            <a href="{% url 'polecacz:remove_game' game.id %}?ordering={{ordering}}&page={{ page_obj.number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}" class="btn btn-outline-danger"><strong>Usuń grę z listy preferencji</strong></a>
+            <a href="{% url 'polecacz:remove_game' game.id %}?ordering={{ordering}}&page={{ page_obj.number }}&game_name={{ game_name }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}" class="btn btn-outline-danger"><strong>Usuń grę z listy preferencji</strong></a>
             {% endif %}
     </div>
     </div>
@@ -117,13 +119,13 @@ $(document).on('click', '.allow-focus', function (e) {
 <nav aria-label="Page navigation">
   <ul class="pagination justify-content-end">
        {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="{% url 'polecacz:game_list' %}?ordering={{ordering}}&page={{ page_obj.previous_page_number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Poprzednia</a></li>
-            <li class="page-item"><a class="page-link" href="{% url 'polecacz:game_list' %}?ordering={{ordering}}&page={{ page_obj.previous_page_number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">{{ page_obj.previous_page_number }}</a></li>
+            <li class="page-item"><a class="page-link" href="{% url 'polecacz:game_list' %}?ordering={{ordering}}&page={{ page_obj.previous_page_number }}&game_name={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Poprzednia</a></li>
+            <li class="page-item"><a class="page-link" href="{% url 'polecacz:game_list' %}?ordering={{ordering}}&page={{ page_obj.previous_page_number }}&game_name={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">{{ page_obj.previous_page_number }}</a></li>
        {% endif %}
-    <li class="page-item active"><a class="page-link" href="{% url 'polecacz:game_list' %}?ordering={{ordering}}&page={{ page_obj.number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">{{ page_obj.number }}</a></li>
+    <li class="page-item active"><a class="page-link" href="{% url 'polecacz:game_list' %}?ordering={{ordering}}&page={{ page_obj.number }}&game_name={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">{{ page_obj.number }}</a></li>
       {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="{% url 'polecacz:game_list' %}?ordering={{ordering}}&page={{ page_obj.next_page_number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">{{ page_obj.next_page_number }}</a></li>
-        <li class="page-item"><a class="page-link" href="{% url 'polecacz:game_list' %}?ordering={{ordering}}&page={{ page_obj.next_page_number }}&game={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Następna</a></li>
+        <li class="page-item"><a class="page-link" href="{% url 'polecacz:game_list' %}?ordering={{ordering}}&page={{ page_obj.next_page_number }}&game_name={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">{{ page_obj.next_page_number }}</a></li>
+        <li class="page-item"><a class="page-link" href="{% url 'polecacz:game_list' %}?ordering={{ordering}}&page={{ page_obj.next_page_number }}&game_name={{ game }}{% for category in selected_categories %}&selected_categories={{ category }}{% endfor %}{% for mechanic in selected_mechanics %}&selected_mechanics={{ mechanic }}{% endfor %}">Następna</a></li>
       {% endif %}
   </ul>
 </nav>

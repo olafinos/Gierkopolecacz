@@ -9,10 +9,16 @@ from taggit.models import TaggedItemBase
 
 
 class GameTag(TaggedItemBase):
+    """
+    GameTag model, keeps information about game for which tag was created
+    """
     content_object = models.ForeignKey('Game', on_delete=models.CASCADE)
 
 
 class Game(models.Model):
+    """
+    Game model, keeps information about game
+    """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     game_id = models.CharField(max_length=35, null=True)
     artist = models.CharField(max_length=350, null=True)
@@ -32,6 +38,9 @@ class Game(models.Model):
 
 
 class Recommendation(models.Model):
+    """
+    GameTag model, keeps information about created recommendation
+    """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
@@ -42,12 +51,18 @@ class Recommendation(models.Model):
 
 
 class SelectedGames(models.Model):
+    """
+    SelectedGames model, keeps information about user selected games
+    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     selected_games = models.ManyToManyField(Game)
 
 
 class Opinion(models.Model):
+    """
+    Opinion model, keeps information about recommendation opinions
+    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     rating = models.IntegerField(validators=[MaxValueValidator(10), MinValueValidator(1)])
