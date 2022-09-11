@@ -8,23 +8,32 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polecacz', '0009_recommendation_opinion_created'),
+        ("polecacz", "0009_recommendation_opinion_created"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='opinion',
-            name='recommendation_id',
+            model_name="opinion",
+            name="recommendation_id",
         ),
         migrations.AddField(
-            model_name='opinion',
-            name='recommendation',
-            field=models.ForeignKey(default='963b944a-27fc-4c2c-ad0e-be241b3f7c86', on_delete=django.db.models.deletion.CASCADE, to='polecacz.recommendation'),
+            model_name="opinion",
+            name="recommendation",
+            field=models.ForeignKey(
+                default="963b944a-27fc-4c2c-ad0e-be241b3f7c86",
+                on_delete=django.db.models.deletion.CASCADE,
+                to="polecacz.recommendation",
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='opinion',
-            name='rating',
-            field=models.IntegerField(validators=[django.core.validators.MaxValueValidator(10), django.core.validators.MinValueValidator(1)]),
+            model_name="opinion",
+            name="rating",
+            field=models.IntegerField(
+                validators=[
+                    django.core.validators.MaxValueValidator(10),
+                    django.core.validators.MinValueValidator(1),
+                ]
+            ),
         ),
     ]

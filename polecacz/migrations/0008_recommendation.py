@@ -10,18 +10,42 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('polecacz', '0007_alter_game_designer_selectedgames'),
+        ("polecacz", "0007_alter_game_designer_selectedgames"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Recommendation',
+            name="Recommendation",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('creation_date', models.DateTimeField(auto_now_add=True)),
-                ('recommended_games', models.ManyToManyField(related_name='recommended_games', to='polecacz.game')),
-                ('selected_games', models.ManyToManyField(related_name='selected_games', to='polecacz.game')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("creation_date", models.DateTimeField(auto_now_add=True)),
+                (
+                    "recommended_games",
+                    models.ManyToManyField(
+                        related_name="recommended_games", to="polecacz.game"
+                    ),
+                ),
+                (
+                    "selected_games",
+                    models.ManyToManyField(
+                        related_name="selected_games", to="polecacz.game"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

@@ -5,6 +5,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from taggit.managers import TaggableManager
 from taggit.models import TaggedItemBase
+
 # Create your models here.
 
 
@@ -12,13 +13,15 @@ class GameTag(TaggedItemBase):
     """
     GameTag model, keeps information about game for which tag was created
     """
-    content_object = models.ForeignKey('Game', on_delete=models.CASCADE)
+
+    content_object = models.ForeignKey("Game", on_delete=models.CASCADE)
 
 
 class Game(models.Model):
     """
     Game model, keeps information about game
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     game_id = models.CharField(max_length=35, null=True)
     artist = models.CharField(max_length=350, null=True)
@@ -34,18 +37,18 @@ class Game(models.Model):
     tags = TaggableManager(through=GameTag)
 
     def __str__(self):
-        return f'{self.name}, Tags: {self.tags.names()}'
+        return f"{self.name}, Tags: {self.tags.names()}"
 
 
 class Recommendation(models.Model):
     """
     GameTag model, keeps information about created recommendation
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    selected_games = models.ManyToManyField(Game, related_name='selected_games')
-    recommended_games = models.ManyToManyField(Game, related_name='recommended_games')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    selected_games = models.ManyToManyField(Game, related_name="selected_games")
+    recommended_games = models.ManyToManyField(Game, related_name="recommended_games")
     opinion_created = models.BooleanField(default=False, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
 
@@ -54,8 +57,8 @@ class SelectedGames(models.Model):
     """
     SelectedGames model, keeps information about user selected games
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     selected_games = models.ManyToManyField(Game)
 
 
@@ -63,8 +66,10 @@ class Opinion(models.Model):
     """
     Opinion model, keeps information about recommendation opinions
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    rating = models.IntegerField(validators=[MaxValueValidator(10), MinValueValidator(1)])
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    rating = models.IntegerField(
+        validators=[MaxValueValidator(10), MinValueValidator(1)]
+    )
     description = models.TextField(max_length=500)
     recommendation = models.ForeignKey(Recommendation, on_delete=models.CASCADE)

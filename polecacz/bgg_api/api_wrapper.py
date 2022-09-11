@@ -6,17 +6,19 @@ from typing import Union
 import requests
 from bs4 import BeautifulSoup
 
-from polecacz.bgg_api import MECHANICS_MAP,CATEGORIES_MAP
-
+from polecacz.bgg_api import MECHANICS_MAP, CATEGORIES_MAP
 
 
 class BGGApiWrapper:
-
     def __init__(self):
-        self.api_url = 'https://boardgamegeek.com/xmlapi2/'
-        self.bgg_games_url = 'https://raw.githubusercontent.com/beefsack/bgg-ranking-historicals/master/'
+        self.api_url = "https://boardgamegeek.com/xmlapi2/"
+        self.bgg_games_url = (
+            "https://raw.githubusercontent.com/beefsack/bgg-ranking-historicals/master/"
+        )
 
-    def prepare_data_to_import_to_database(self, number_of_games: int = None) -> tuple[list[dict],list[dict]]:
+    def prepare_data_to_import_to_database(
+        self, number_of_games: int = None
+    ) -> tuple[list[dict], list[dict]]:
         result = []
         games_with_errors = []
         counter = 1
@@ -30,11 +32,11 @@ class BGGApiWrapper:
         if number_of_games:
             games_info = games_info[:number_of_games]
         for game in games_info:
-            print(f'Processing game number: {counter}')
+            print(f"Processing game number: {counter}")
             counter += 1
-            extended_info = self._get_game_information_using_id(game['id'])
+            extended_info = self._get_game_information_using_id(game["id"])
 
-            if 'error' in extended_info.keys():
+            if "error" in extended_info.keys():
                 games_with_errors.append({**game, **extended_info})
             else:
                 result.append({**game, **extended_info})
@@ -50,11 +52,11 @@ class BGGApiWrapper:
         number_of_retries = 0
         current_date = datetime.datetime.now()
         while number_of_retries < 3:
-            dump_name = str(current_date.date())+'.csv'
-            response = requests.get(self.bgg_games_url+dump_name)
+            dump_name = str(current_date.date()) + ".csv"
+            response = requests.get(self.bgg_games_url + dump_name)
             if response.status_code == 200:
-                dump_filename = f'dump-{dump_name}'
-                with open(dump_filename, 'wb') as file:
+                dump_filename = f"dump-{dump_name}"
+                with open(dump_filename, "wb") as file:
                     file.write(response.content)
                 return dump_filename
             else:
@@ -71,11 +73,17 @@ class BGGApiWrapper:
         :return: list with dictionaries containing name and id
         """
         result = []
-        with open(dump_filename, newline='\n', encoding='utf-8') as csvfile:
-            reader = csv.reader(csvfile, delimiter=',')
+        with open(dump_filename, newline="\n", encoding="utf-8") as csvfile:
+            reader = csv.reader(csvfile, delimiter=",")
             for row in reader:
                 result.append(
-                    {'id': row[0], 'rank': row[3], 'average': row[5], 'thumbnail': row[8]})
+                    {
+                        "id": row[0],
+                        "rank": row[3],
+                        "average": row[5],
+                        "thumbnail": row[8],
+                    }
+                )
         return result[1:]
 
     def _get_game_information_using_id(self, game_id: str) -> dict:
@@ -85,15 +93,15 @@ class BGGApiWrapper:
         :return: Dictionary with game information
         """
 
-        def _get_tag_value(tag_name: str, soup: BeautifulSoup,  **kwargs) -> str:
+        def _get_tag_value(tag_name: str, soup: BeautifulSoup, **kwargs) -> str:
             """
             Get tag value from XML object
             :return: XML tag value
             """
             tag = soup.items.item.find(tag_name, kwargs)
-            return tag.get('value')
+            return tag.get("value")
 
-        def _get_tag(tag_name: str, soup: BeautifulSoup,  **kwargs) -> str:
+        def _get_tag(tag_name: str, soup: BeautifulSoup, **kwargs) -> str:
             """
             Get tag value from XML object
             :return: XML tag value
@@ -101,13 +109,15 @@ class BGGApiWrapper:
             tag = soup.items.item.find(tag_name, kwargs)
             return tag.string
 
-        def _get_tag_list_values(tag_name: str, soup: BeautifulSoup, **kwargs) -> list[str]:
+        def _get_tag_list_values(
+            tag_name: str, soup: BeautifulSoup, **kwargs
+        ) -> list[str]:
             """
             Get list with tag values from XML object
             :return: XML tag value
             """
             tags = soup.items.item.find_all(tag_name, kwargs)
-            return [tag.get('value') for tag in tags]
+            return [tag.get("value") for tag in tags]
 
         def _process_game_info(game_info: str) -> dict:
             """
@@ -116,20 +126,38 @@ class BGGApiWrapper:
             :return: Dictionary with game info
             """
             result = {}
-            soup = BeautifulSoup(game_info, features='xml')
-            result['game_name'] = _get_tag_value(tag_name="name", soup=soup, **{"type": "primary"})
-            result['year_published'] = _get_tag_value(tag_name="yearpublished", soup=soup)
-            result['min_players'] = _get_tag_value(tag_name="minplayers", soup=soup)
-            result['max_players'] = _get_tag_value(tag_name="maxplayers", soup=soup)
-            result['playing_time'] = _get_tag_value(tag_name="playingtime", soup=soup)
-            result['alternate_name'] = _get_tag_list_values(tag_name='name', soup=soup, **{"type": "alternate"})
-            result['categories'] = _get_tag_list_values(tag_name='link', soup=soup, **{"type": "boardgamecategory"})
-            result['mechanics'] = _get_tag_list_values(tag_name='link', soup=soup, **{"type": "boardgamemechanic"})
-            result['designer'] = ", ".join(_get_tag_list_values(tag_name='link', soup=soup, **{"type": "boardgamedesigner"}))
-            result['artist'] = ", ".join(_get_tag_list_values(tag_name='link', soup=soup, **{"type": "boardgameartist"}))
+            soup = BeautifulSoup(game_info, features="xml")
+            result["game_name"] = _get_tag_value(
+                tag_name="name", soup=soup, **{"type": "primary"}
+            )
+            result["year_published"] = _get_tag_value(
+                tag_name="yearpublished", soup=soup
+            )
+            result["min_players"] = _get_tag_value(tag_name="minplayers", soup=soup)
+            result["max_players"] = _get_tag_value(tag_name="maxplayers", soup=soup)
+            result["playing_time"] = _get_tag_value(tag_name="playingtime", soup=soup)
+            result["alternate_name"] = _get_tag_list_values(
+                tag_name="name", soup=soup, **{"type": "alternate"}
+            )
+            result["categories"] = _get_tag_list_values(
+                tag_name="link", soup=soup, **{"type": "boardgamecategory"}
+            )
+            result["mechanics"] = _get_tag_list_values(
+                tag_name="link", soup=soup, **{"type": "boardgamemechanic"}
+            )
+            result["designer"] = ", ".join(
+                _get_tag_list_values(
+                    tag_name="link", soup=soup, **{"type": "boardgamedesigner"}
+                )
+            )
+            result["artist"] = ", ".join(
+                _get_tag_list_values(
+                    tag_name="link", soup=soup, **{"type": "boardgameartist"}
+                )
+            )
             thumbnail = _get_tag(tag_name="thumbnail", soup=soup)
             if thumbnail:
-                result['thumbnail'] = thumbnail
+                result["thumbnail"] = thumbnail
             return result
 
         game_info = self._request_game_info_using_api(game_id)
@@ -145,7 +173,7 @@ class BGGApiWrapper:
         :param game_id: Game ID
         :return: XML with game info if request was accepted or dicitonary with game id and response content.
         """
-        request_url = self.api_url + f'thing?id={game_id}'
+        request_url = self.api_url + f"thing?id={game_id}"
         try:
             number_of_retries = 0
             response = requests.get(request_url)
@@ -157,8 +185,10 @@ class BGGApiWrapper:
                     raise requests.exceptions.ConnectionError
             return response.text
         except requests.exceptions.ConnectionError:
-            print(f"There was an error with retriving information about game with id: {game_id}")
-            return {'game_id': game_id, 'error': response.content}
+            print(
+                f"There was an error with retriving information about game with id: {game_id}"
+            )
+            return {"game_id": game_id, "error": response.content}
 
     @staticmethod
     def _map_fields_to_polish_equivalent(result: list[dict]) -> list[dict]:
@@ -168,10 +198,14 @@ class BGGApiWrapper:
         :return: List with games, which mechanics and categories fields are mapped to polish equivalent.
         """
         for game in result:
-            game['mechanics'] = [MECHANICS_MAP.get(mechanic, '') for mechanic in game['mechanics']]
-            while '' in game['mechanics']:
-                game['mechanics'].remove('')
-            game['categories'] = [CATEGORIES_MAP.get(category, '') for category in game['categories']]
-            while '' in game['categories']:
-                game['categories'].remove('')
+            game["mechanics"] = [
+                MECHANICS_MAP.get(mechanic, "") for mechanic in game["mechanics"]
+            ]
+            while "" in game["mechanics"]:
+                game["mechanics"].remove("")
+            game["categories"] = [
+                CATEGORIES_MAP.get(category, "") for category in game["categories"]
+            ]
+            while "" in game["categories"]:
+                game["categories"].remove("")
         return result

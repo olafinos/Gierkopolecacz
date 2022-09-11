@@ -2,19 +2,21 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 
+
 class UserRegistrationForm(UserCreationForm):
     """
     Extended basic django form which allows to use email
     """
-    email = forms.EmailField(help_text='A valid email address, please.', required=True)
+
+    email = forms.EmailField(help_text="A valid email address, please.", required=True)
 
     class Meta:
         model = get_user_model()
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ["username", "email", "password1", "password2"]
 
     def save(self, commit=True):
         user = super(UserRegistrationForm, self).save(commit=False)
-        user.email = self.cleaned_data['email']
+        user.email = self.cleaned_data["email"]
         if commit:
             user.save()
         return user

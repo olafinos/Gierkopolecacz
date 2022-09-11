@@ -9,21 +9,35 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('polecacz', '0006_alter_game_designer'),
+        ("polecacz", "0006_alter_game_designer"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='game',
-            name='designer',
+            model_name="game",
+            name="designer",
             field=models.CharField(max_length=350, null=True),
         ),
         migrations.CreateModel(
-            name='SelectedGames',
+            name="SelectedGames",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('selected_games', models.ManyToManyField(to='polecacz.game')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("selected_games", models.ManyToManyField(to="polecacz.game")),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

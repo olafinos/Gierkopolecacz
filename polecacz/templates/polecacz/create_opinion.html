@@ -1,5 +1,6 @@
 {% extends 'polecacz/base.html' %}
 {% load i18n %}
+{% load dict_operation_tags %}
 {% block title %}Zostaw opinie{% endblock %}
     {% block content %}
 <h2>Zostaw opinie</h2>
@@ -15,7 +16,7 @@
             <ul>
                 {% for field in form %}
                     {% if field.errors %}
-              <li>{{ field.label }}:
+              <li>{{ name_map|lookup:field.label }}:
               <ul>
                 {% for error in field.errors %}
                 <li>{{ error|striptags }}</li>

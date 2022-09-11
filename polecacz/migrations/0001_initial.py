@@ -15,27 +15,44 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Game',
+            name="Game",
             fields=[
-                ('id', models.CharField(max_length=35, primary_key=True, serialize=False)),
-                ('rank', models.IntegerField()),
-                ('rating', models.FloatField()),
-                ('thumbnail', models.CharField(max_length=200)),
-                ('name', models.CharField(max_length=200)),
-                ('year_published', models.CharField(max_length=4)),
-                ('min_players', models.IntegerField()),
-                ('max_players', models.IntegerField()),
-                ('playing_time', models.IntegerField()),
+                (
+                    "id",
+                    models.CharField(max_length=35, primary_key=True, serialize=False),
+                ),
+                ("rank", models.IntegerField()),
+                ("rating", models.FloatField()),
+                ("thumbnail", models.CharField(max_length=200)),
+                ("name", models.CharField(max_length=200)),
+                ("year_published", models.CharField(max_length=4)),
+                ("min_players", models.IntegerField()),
+                ("max_players", models.IntegerField()),
+                ("playing_time", models.IntegerField()),
             ],
         ),
         migrations.CreateModel(
-            name='Opinion',
+            name="Opinion",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('rating', models.FloatField()),
-                ('description', models.TextField(max_length=500)),
-                ('recommendation_id', models.IntegerField()),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("rating", models.FloatField()),
+                ("description", models.TextField(max_length=500)),
+                ("recommendation_id", models.IntegerField()),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

@@ -19,11 +19,11 @@ from django.urls import path, include
 from .views import signup, logout_view, activate
 
 urlpatterns = [
-    path('', lambda req: redirect('/polecacz/')),
-    path('polecacz/', include('polecacz.urls')),
-    path('admin/', admin.site.urls),
+    path("", lambda req: redirect("/polecacz/")),
+    path("polecacz/", include("polecacz.urls")),
+    path("admin/", admin.site.urls),
     path("", include("django.contrib.auth.urls")),
     path("signup", signup, name="signup"),
     path("logout", logout_view, name="logout"),
-    path('activate/<uidb64>/<token>', activate, name='activate')
+    path("activate/<uidb64>/<token>", activate, name="activate"),
 ]

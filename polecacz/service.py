@@ -8,7 +8,6 @@ from django.db.models import Count, QuerySet, Q
 
 
 class GameService:
-
     @staticmethod
     def get_all_games_ordered_by(order: str) -> QuerySet:
         return Game.objects.order_by(order)
@@ -21,11 +20,15 @@ class GameService:
         :return: QuerySet with games ordered by similarity
         """
         similar_games = Game.objects.filter(tags__name__in=tags)
-        similar_games = similar_games.annotate(same_tags=Count('tags')).order_by('-same_tags','-rating')
+        similar_games = similar_games.annotate(same_tags=Count("tags")).order_by(
+            "-same_tags", "-rating"
+        )
         return similar_games
 
     @staticmethod
-    def filter_games_which_contains_string(searched_string: str) -> Union[QuerySet, list]:
+    def filter_games_which_contains_string(
+        searched_string: str,
+    ) -> Union[QuerySet, list]:
         """
         Get all games which has string in name
         :param user: User object
@@ -34,7 +37,9 @@ class GameService:
         return Game.objects.filter(name__icontains=searched_string).all()
 
     @staticmethod
-    def filter_games_which_contains_tag(tag: str, object_list: Union[None, QuerySet] = None) -> Union[QuerySet, list]:
+    def filter_games_which_contains_tag(
+        tag: str, object_list: Union[None, QuerySet] = None
+    ) -> Union[QuerySet, list]:
         """
         Get all games which has string in name
         :param user: User object
@@ -67,7 +72,7 @@ class GameService:
         :param game_queryset: QuerySet with games
         :return: List with game ids
         """
-        return list(game_queryset.values_list('id', flat=True))
+        return list(game_queryset.values_list("id", flat=True))
 
     @staticmethod
     def get_tag_names_list_from_game(game: Game) -> list[str]:
@@ -76,11 +81,10 @@ class GameService:
         :param game: Game object
         :return: List with tag names
         """
-        return [tag for tag in game.tags.values_list('name', flat=True)]
+        return [tag for tag in game.tags.values_list("name", flat=True)]
 
 
 class SelectedGamesService:
-
     @staticmethod
     def get_user_selected_games(user: User) -> Union[QuerySet, list]:
         """
@@ -109,7 +113,6 @@ class SelectedGamesService:
 
 
 class RecommendationService:
-
     @staticmethod
     def get_recommended_games(id: str) -> Union[QuerySet, list]:
         """

@@ -13,20 +13,7 @@
     <div id="errors">
         <div class="inner">
           <strong>
-            <p>W trakcie logowania pojawiły się problemy. Proszę popraw następujące pola:</p>
-            <ul>
-                {% for field in form %}
-                    {% if field.errors %}
-              <li>{{ field.label }}:
-              <ul>
-                {% for error in field.errors %}
-                <li>{{ error|striptags }}</li>
-                {% endfor %}
-              </ul>
-            </li>
-              {% endif %}
-                {% endfor %}
-            </ul>
+            <p>W trakcie logowania pojawiły się problemy. Użytkownik nie istnieje lub podane dane nie zgadzają się.</p>
             </strong>
         </div>
     </div>

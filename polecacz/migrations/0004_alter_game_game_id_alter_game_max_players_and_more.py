@@ -6,38 +6,38 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polecacz', '0003_alter_game_game_id_alter_game_max_players_and_more'),
+        ("polecacz", "0003_alter_game_game_id_alter_game_max_players_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='game',
-            name='game_id',
+            model_name="game",
+            name="game_id",
             field=models.CharField(max_length=35, null=True),
         ),
         migrations.AlterField(
-            model_name='game',
-            name='max_players',
+            model_name="game",
+            name="max_players",
             field=models.IntegerField(null=True),
         ),
         migrations.AlterField(
-            model_name='game',
-            name='min_players',
+            model_name="game",
+            name="min_players",
             field=models.IntegerField(null=True),
         ),
         migrations.AlterField(
-            model_name='game',
-            name='playing_time',
+            model_name="game",
+            name="playing_time",
             field=models.IntegerField(null=True),
         ),
         migrations.AlterField(
-            model_name='game',
-            name='rank',
+            model_name="game",
+            name="rank",
             field=models.IntegerField(null=True),
         ),
         migrations.AlterField(
-            model_name='game',
-            name='rating',
+            model_name="game",
+            name="rating",
             field=models.FloatField(null=True),
         ),
     ]
