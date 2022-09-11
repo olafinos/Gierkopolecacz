@@ -37,7 +37,7 @@ class GameService:
         return Game.objects.filter(name__icontains=searched_string).all()
 
     @staticmethod
-    def filter_games_which_contains_tag(
+    def filter_games_which_name_contains_tag(
         tag: str, object_list: Union[None, QuerySet] = None
     ) -> Union[QuerySet, list]:
         """
@@ -61,7 +61,7 @@ class GameService:
         """
         try:
             game = Game.objects.get(id=id)
-        except Recommendation.DoesNotExist:
+        except Game.DoesNotExist:
             raise Http404
         return game
 
@@ -159,18 +159,15 @@ class RecommendationService:
         :param user: User object
         :return: QuerySet with recommendations
         """
-        try:
-            recommendations = Recommendation.objects.filter(user=user)
-        except Recommendation.DoesNotExist:
-            return []
+        recommendations = Recommendation.objects.filter(user=user)
         return recommendations.all()
 
     @staticmethod
-    def get_recommendation_by_id(id: str) -> QuerySet:
+    def get_recommendation_by_id(id: str) -> Recommendation:
         """
         Get recommendation usign it's id
         :param id: Recommendation id
-        :return: Queryset with recommendation
+        :return: Recommendation object
         """
         try:
             recommendation = Recommendation.objects.get(id=id)
@@ -179,10 +176,10 @@ class RecommendationService:
         return recommendation
 
     @staticmethod
-    def create_recommendation(**kwargs) -> QuerySet:
+    def create_recommendation(**kwargs) -> Recommendation:
         """
-        Get recommendation usign it's id
-        :return: Queryset with recommendation
+        Create recommendation with passed keywords
+        :return: Recommendation object
         """
         try:
             recommendation = Recommendation.objects.create(**kwargs)

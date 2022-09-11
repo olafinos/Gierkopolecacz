@@ -133,7 +133,7 @@ class GameListView(LoginRequiredMixin, generic.ListView):
         if game or tags:
             object_list = GameService.filter_games_which_contains_string(game)
             for tag in tags:
-                object_list = GameService.filter_games_which_contains_tag(
+                object_list = GameService.filter_games_which_name_contains_tag(
                     tag, object_list
                 )
             return object_list.order_by(self.request.GET.get("ordering", "rank"))
@@ -393,13 +393,13 @@ def create_recommendation(request: HttpRequest):
         selected_games_obj = SelectedGamesService.get_selected_games_object_by_user(
             user=request.user
         )
-        if not selected_games_obj.selected_games.all():
+        games = SelectedGamesService.get_user_selected_games(user=request.user)
+        if not games:
             return redirect("polecacz:selected_games")
 
         recommendation_object = RecommendationService.create_recommendation(
             user=request.user
         )
-        games = selected_games_obj.selected_games.all()
         games_ids = GameService.get_ids_from_game_queryset(games)
 
         tag_list = []
