@@ -11,7 +11,7 @@ from polecacz.models import SelectedGames, Recommendation, Opinion
 from test.factories.game import GameFactory
 
 
-class UserViewTests(TestCase):
+class UserViewTest(TestCase):
     def test_signup_not_valid_data(self):
         username = "a" * 200
         response = self.client.post(
@@ -94,7 +94,8 @@ class UserViewTests(TestCase):
         self.assertFalse(user.is_active)
 
 
-class PolecaczViewsTests(TestCase):
+class IndexViewTest(TestCase):
+
     def setUp(self) -> None:
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -107,6 +108,14 @@ class PolecaczViewsTests(TestCase):
         response = self.client.get("/polecacz/")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(len(response.context["object_list"]) == 12)
+
+
+class GameDetailViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
 
     def test_game_detail_view(self):
         game = GameFactory(
@@ -143,6 +152,14 @@ class PolecaczViewsTests(TestCase):
         self.assertContains(response, "Tag1", html=True)
         self.assertContains(response, "Tag2", html=True)
         self.assertContains(response, "Tag3", html=True)
+
+
+class GameListViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
 
     def test_game_list_view(self):
         game1 = GameFactory(
@@ -301,6 +318,14 @@ class PolecaczViewsTests(TestCase):
         self.assertTrue(response.context["object_list"][0] == game1)
         self.assertTrue(len(response.context["object_list"]) == 2)
 
+
+class GameSearchTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+
     def test_game_search_returns_proper_data(self):
         game1 = GameFactory(
             tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
@@ -329,6 +354,14 @@ class PolecaczViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/polecacz/game_list")
 
+
+class SelectedGamesListViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+
     def test_selected_games_list_view_selected_games_created(self):
         with self.assertRaises(SelectedGames.DoesNotExist):
             SelectedGames.objects.get(user__username="testuser")
@@ -353,6 +386,14 @@ class PolecaczViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, game1.name, html=True)
         self.assertNotContains(response, game2.name, html=True)
+
+
+class AddToSelectedGamesTests(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
 
     def test_add_to_selected_games_adds_game(self):
         game1 = GameFactory(
@@ -388,7 +429,15 @@ class PolecaczViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/polecacz/game_list")
 
-    def test_remove_to_selected_games_removes_game(self):
+
+class RemoveFromSelectedGamesTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+
+    def test_remove_from_selected_games_removes_game(self):
         game1 = GameFactory(
             tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
         )
@@ -400,7 +449,7 @@ class PolecaczViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(game1 not in selected_games_obj.selected_games.all())
 
-    def test_remove_to_selected_games_proper_redirect(self):
+    def test_remove_from_selected_games_proper_redirect(self):
         game1 = GameFactory(
             tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
         )
@@ -419,7 +468,7 @@ class PolecaczViewsTests(TestCase):
             "/polecacz/game/?&ordering=rank&page=2&selected_categories=Tag1&selected_categories=Tag2",
         )
 
-    def test_remove_to_selected_games_post_redirects(self):
+    def test_remove_from_selected_games_post_redirects(self):
         game1 = GameFactory(
             tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
         )
@@ -427,6 +476,14 @@ class PolecaczViewsTests(TestCase):
         response = self.client.post(f"/polecacz/remove_game_from_selected/{game1.id}")
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/polecacz/game_list")
+
+
+class RecommendationListViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
 
     def test_recommendations_list_shows_all_recommendations(self):
         recommendation = Recommendation.objects.create(user=self.user)
@@ -460,6 +517,14 @@ class PolecaczViewsTests(TestCase):
         self.assertContains(response, "Opinia została już dodana")
         self.assertTrue(len(response.context["object_list"]) == 1)
 
+
+class RecommendationDetailViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+
     def test_recommendation_detail(self):
         recommendation = Recommendation.objects.create(user=self.user)
         game1 = GameFactory(
@@ -492,6 +557,14 @@ class PolecaczViewsTests(TestCase):
         self.assertEqual(response.context["opinion_created"], False)
         self.assertEqual(response.context["id"], recommendation.id)
 
+
+class OpinionFormViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+
     def test_opinion_form_view_shows_form(self):
         recommendation = Recommendation.objects.create(user=self.user)
         response = self.client.get(f"/polecacz/opinion/{recommendation.id}")
@@ -499,6 +572,14 @@ class PolecaczViewsTests(TestCase):
         self.assertContains(response, "Zostaw opinie")
         self.assertContains(response, "Ocena:")
         self.assertContains(response, "Uwagi do rekomendacji:")
+
+
+class OpinionCreateViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
 
     def test_opinion_create_view(self):
         recommendation = Recommendation.objects.create(user=self.user)
@@ -537,10 +618,18 @@ class PolecaczViewsTests(TestCase):
             response, "Upewnij się, że ta wartość jest mniejsza lub równa 10"
         )
 
+
+class RecommendationCreateViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+
     def test_create_recommendation_get_redirects(self):
         response = self.client.get(f"/polecacz/create_recommendation/")
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "/polecacz/game_list")
+        self.assertEqual(response.url, "/polecacz/game/")
 
     def test_create_recommendation_create_recommendations(self):
         game1 = GameFactory(

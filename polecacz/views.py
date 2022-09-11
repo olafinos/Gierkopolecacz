@@ -415,7 +415,7 @@ def create_recommendation(request: HttpRequest):
         selected_games_obj.save()
         return redirect("polecacz:recommendation_detail", recommendation_object.id)
     else:
-        return redirect("/polecacz/game_list")
+        return redirect("polecacz:game_list")
 
 
 def _create_recommendation_using_tags(
