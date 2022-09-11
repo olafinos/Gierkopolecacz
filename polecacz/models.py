@@ -30,7 +30,7 @@ class Game(models.Model):
     rating = models.FloatField(null=True)
     thumbnail = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
-    year_published = models.CharField(max_length=4)
+    year_published = models.CharField(max_length=5)
     min_players = models.IntegerField(null=True)
     max_players = models.IntegerField(null=True)
     playing_time = models.IntegerField(null=True)

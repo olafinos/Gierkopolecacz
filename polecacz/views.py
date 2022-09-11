@@ -202,7 +202,7 @@ class RecommendationListView(LoginRequiredMixin, generic.ListView):
         recommendation_objects = RecommendationService.get_all_recommendations(
             self.request.user
         )
-        return recommendation_objects
+        return recommendation_objects.order_by('-creation_date')
 
 
 class OpinionFormView(LoginRequiredMixin, SuccessMessageMixin, generic.FormView):

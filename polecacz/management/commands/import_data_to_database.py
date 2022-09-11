@@ -12,7 +12,7 @@ class Command(BaseCommand):
         Creates or updates existing game data using csv file, which is downloaded
         """
         bgg_api_wrap = BGGApiWrapper()
-        data, wrong_data = bgg_api_wrap.prepare_data_to_import_to_database(10)
+        data, wrong_data = bgg_api_wrap.prepare_data_to_import_to_database(1500)
         counter = 0
         for game_info in data:
             try:

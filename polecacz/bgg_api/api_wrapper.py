@@ -148,12 +148,12 @@ class BGGApiWrapper:
             result["designer"] = ", ".join(
                 _get_tag_list_values(
                     tag_name="link", soup=soup, **{"type": "boardgamedesigner"}
-                )
+                )[:10]
             )
             result["artist"] = ", ".join(
                 _get_tag_list_values(
                     tag_name="link", soup=soup, **{"type": "boardgameartist"}
-                )
+                )[:10]
             )
             thumbnail = _get_tag(tag_name="thumbnail", soup=soup)
             if thumbnail:
