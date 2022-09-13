@@ -3,19 +3,79 @@
 {% block title %}GierkoPolecacz{% endblock %}
 {% block content %}
 <div class="container-fluid text-center">
-    <h1 class="display-4">Witaj {% if user.is_authenticated %} {{user.username}} {% endif %}</h1>
-<!--    <img src="/static/image/Logo.png" style="width:532px;height:480px">-->
+    <h1 class="display-4">Witaj {% if user.is_authenticated %} {{user.username}} {% else %} w aplikacji {% endif %}</h1>
+<!--    <img src="/root/image/Logo.png" style="width:532px;height:480px">-->
 <br>
     {% if not user.is_authenticated %}
-    <h3>Gierkopolecacz jest aplikacją pomagająca w wyborze gier planszowych na podstawie ponadych przez Ciebie preferencji.</h3>
+    <img src="/static/image/Slice3.png" style="width:300px;height:260px">
+    <br><br>
+    <h3>Gierkopolecacz pomaga w wyborze gier planszowych na podstawie podanych przez Ciebie preferencji.</h3>
     <h3>Sprawdź jak działa i <a href="{% url 'signup' %}" class="text-muted">załóż darmowe konto</a>.</h3>
     {% else %}
     <h3>Poszukajmy wspólnie nowych gier, przechodząc do widoku <a href="{% url 'polecacz:game_list' %}" class="text-muted">szukania.</a></h3>
+    <br><hr class="solid">
+    <h4> Instrukcja korzystania z aplikacji: </h4>
+
+    <div id="carouselInstruction" class="carousel slide" data-ride="carousel">
+  <ol class="carousel-indicators">
+    <li data-target="#carouselInstruction" data-slide-to="0" class="active"></li>
+    <li data-target="#carouselInstruction" data-slide-to="1"></li>
+    <li data-target="#carouselInstruction" data-slide-to="2"></li>
+      <li data-target="#carouselInstruction" data-slide-to="3"></li>
+      <li data-target="#carouselInstruction" data-slide-to="4"></li>
+  </ol>
+  <div class="carousel-inner" style="border:2px solid #38220f;">
+    <div class="carousel-item active">
+      <img src="/static/image/krok1.png" class="d-block w-100" alt="...">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Krok pierwszy</h5>
+        <p>Przejdź do widoku listy gier, wybierając jeden z odnośników.</p>
+      </div>
+    </div>
+    <div class="carousel-item">
+      <img src="/static/image/krok2.png" class="d-block w-100" alt="...">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Krok drugi</h5>
+        <p>Za pomocą przycisku dodaj gry, które Ci się podobały.</p>
+      </div>
+    </div>
+    <div class="carousel-item">
+      <img src="/static/image/krok3.png" class="d-block w-100" alt="...">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Krok trzeci</h5>
+        <p>Przejdź do widoku listy wybranych gier lub stwórz rekomendację bezpośrednio korzystając z zielonego przycisku.</p>
+      </div>
+    </div>
+          <div class="carousel-item">
+      <img src="/static/image/krok4.png" class="d-block w-100" alt="...">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Krok czwarty</h5>
+        <p>Aby utworzyć rekomendację kliknij przycisk, możesz też edytować wybrane gry.</p>
+      </div>
+    </div>
+       <div class="carousel-item">
+      <img src="/static/image/krok5.png" class="d-block w-100" alt="...">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Krok piąty</h5>
+        <p>Rekomendacja została utworzona, znajdują się w niej gry, które mogą Ci się również spodobać.</p>
+      </div>
+    </div>
+  </div>
+  <button class="carousel-control-prev" type="button" data-target="#carouselInstruction" data-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="sr-only">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-target="#carouselInstruction" data-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="sr-only">Next</span>
+  </button>
+</div>
     {% endif %}
 </div>
 <br>
+{% if user.is_authenticated %}
 <div class="container-fluid">
-    <center><h1>Najwyżej oceniane gry</h1></center>
+    <center><h2>Najwyżej oceniane gry</h2></center>
         <div class="container-fluid">
         <div class="row">
             {% for game in top_games %}
@@ -36,4 +96,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}

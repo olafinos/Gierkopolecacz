@@ -18,10 +18,9 @@
        <h6 class="mt-0"><strong>Artysta: </strong>{{ game.artist  }}</h6>
 
     <p><strong>Mechaniki i kategorie zawarte w grze: </strong>
-        <ul>
         {% for tag in game.tags.names %}
-            <li>{{ tag }}</li>
-        {% endfor %}</ul>
+        <span class="badge badge-pill" style="backgroud: #7BDDF0;">{{ tag }}</span>
+        {% endfor %}
        </p>
   </div>
             {% if not selected_game %}

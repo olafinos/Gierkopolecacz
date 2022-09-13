@@ -25,7 +25,7 @@
   </head>
   <body>
   <style type="text/css">
-   body { background: #dbc1ac !important; }
+   body { background: #CFCDEB !important; }
    .dropdown-menu {
     max-height: 280px;
     overflow-y: auto;
@@ -74,7 +74,7 @@
         font-size: 40px;
         box-shadow: 2px 2px 5px rgba(0,0,0, 0.25);
         position: fixed;
-        right: 60px;
+        right: 85px;
         bottom: 40px;
         transition: backgroud 0.25s;
         border: none;
@@ -84,9 +84,23 @@
     .floating-btn:active {
         background: #007d63;
     }
+    .badge-pill {
+        background-color: #7BDDF0;
+    }
+    .nav-item {
+        font-size: 20px;
+    }
+    .carousel-control-next, .carousel-control-prev {
+    width: 8%
+    }
+    .carousel-caption {
+    background: rgba(0, 0, 0, 0.65);
+    }
   </style>
-  <nav class="navbar navbar-expand-lg navbar-dark" style="background: #cba32a">
-  <a class="navbar-brand" href="{% url 'polecacz:index' %}"><h5>GierkoPolecacz</h5></a>
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background: #60679c">
+    <a class="navbar-brand" href="{% url 'polecacz:index' %}">
+          <img src="/static/image/Slice3.png" width="90" alt="" class="d-inline-block">
+  </a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -110,7 +124,7 @@
     </ul>
     <ul class="navbar-nav mr-sm 2">
       {% if user.is_authenticated %}
-      <li class="navbar navbar-dark" style="background: #cba32a">
+      <li class="navbar navbar-dark" style="background: #60679c">
         <span class="navbar-brand ">{{ user.username}}</span>
       </li>
       {% else %}
@@ -154,7 +168,7 @@
 {% endif %}
         </div>
     </div>
-      {% if user.is_authenticated and request.user|selected_games_count > 0 %}
+ {% if user.is_authenticated and request.user|selected_games_count > 0 %}
       <script>
     $(function () {
   $('[data-toggle="tooltip"]').tooltip()

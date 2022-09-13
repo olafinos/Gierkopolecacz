@@ -13,7 +13,7 @@
     </center>
 {% else %}
     <br>
-    <center><h4>Wygląda na to, że nie wybrano jeszcze żadnych gier. Wybierz je proszę przechodząc do widoku <a href="{% url 'polecacz:game_list' %}" class="text-muted">listy gier</a></h4></center>
+    <center><h4>Wygląda na to, że nie wybrano jeszcze żadnych gier. Wybierz je, przechodząc do widoku <a href="{% url 'polecacz:game_list' %}" class="text-muted">listy gier</a></h4></center>
 {% endif %}
 {% for game in games_list %}
     <div class="container p-3 my-3" style="border:2px solid #38220f;">

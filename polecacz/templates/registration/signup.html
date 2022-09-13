@@ -2,7 +2,9 @@
 {% load i18n %}
 {% block title %}Rejestracja{% endblock %}
 {% block content %}
+<center>
 <h2>Zarejestruj się</h2>
+</center>
 <form method="post">
     {% csrf_token %}
       {% if form.errors %}
@@ -48,6 +50,8 @@
     <label for="id_password2">Potwierdzenie hasła:</label>
     <input type="password" class="form-control" name="password2" autocomplete="new-password" required id="id_password2"> <span class="helptext">Wpisz ponownie hasło w celu, weryfikacji.</span>
   </div>
+    <center>
   <button type="submit" class="btn btn-dark">Zarejestruj się</button>
+    </center>
 </form>
 {% endblock %}
