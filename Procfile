@@ -1,0 +1,1 @@
+web: gunicorn gierkopolecacz.wsgi --log-file -
