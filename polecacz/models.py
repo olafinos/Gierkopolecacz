@@ -11,7 +11,7 @@ from taggit.models import TaggedItemBase
 
 class GameTag(TaggedItemBase):
     """
-    GameTag model, keeps information about game for which tag was created
+    GameTag model, keeps information about tag
     """
 
     content_object = models.ForeignKey("Game", on_delete=models.CASCADE)
@@ -42,7 +42,7 @@ class Game(models.Model):
 
 class Recommendation(models.Model):
     """
-    GameTag model, keeps information about created recommendation
+    Recommendation model, keeps information about created recommendation
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
