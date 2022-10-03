@@ -107,11 +107,11 @@
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav ml-auto">
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'polecacz:game_list' %}">Lista gier</a>
-      </li>
       {% if user.is_authenticated %}
-      <li class="nav-item">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'polecacz:game_list' %}">Lista gier</a>
+        </li>
+        <li class="nav-item">
              <a class="nav-link" href="{% url 'polecacz:recommendation_list' %}">Moje rekomendacje</a>
       </li>
         <li class="nav-item">
