@@ -71,7 +71,7 @@ class UserViewTest(TestCase):
             is_active=False,
         )
         encoded_id = urlsafe_base64_encode(force_bytes(user.pk))
-        response = self.client.post(f"/activate/{encoded_id}/token")
+        response = self.client.get(f"/activate/{encoded_id}/token")
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/login/")
         user = User.objects.get(username="username")
@@ -87,7 +87,7 @@ class UserViewTest(TestCase):
             is_active=False,
         )
         encoded_id = urlsafe_base64_encode(force_bytes(user.pk))
-        response = self.client.post(f"/activate/{encoded_id}/invalid_token")
+        response = self.client.get(f"/activate/{encoded_id}/invalid_token")
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "polecacz/")
         user = User.objects.get(username="username")
@@ -349,10 +349,9 @@ class GameSearchTest(TestCase):
         self.assertNotContains(response, game1.name)
         self.assertNotContains(response, game2.name)
 
-    def test_game_search_post_redirects(self):
+    def test_game_search_post_405(self):
         response = self.client.post("/polecacz/game_search/?game_name=Zu")
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "/polecacz/game_list")
+        self.assertEqual(response.status_code, 405)
 
 
 class SelectedGamesListViewTest(TestCase):
@@ -421,13 +420,12 @@ class AddToSelectedGamesTests(TestCase):
             "/polecacz/game/?&ordering=rank&page=2&selected_categories=Tag1&selected_categories=Tag2",
         )
 
-    def test_add_to_selected_games_post_redirects(self):
+    def test_add_to_selected_games_post_405(self):
         game1 = GameFactory(
             tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
         )
         response = self.client.post(f"/polecacz/add_game_to_selected/{game1.id}")
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "/polecacz/game_list")
+        self.assertEqual(response.status_code, 405)
 
 
 class RemoveFromSelectedGamesTest(TestCase):
@@ -468,14 +466,13 @@ class RemoveFromSelectedGamesTest(TestCase):
             "/polecacz/game/?&ordering=rank&page=2&selected_categories=Tag1&selected_categories=Tag2",
         )
 
-    def test_remove_from_selected_games_post_redirects(self):
+    def test_remove_from_selected_games_post_405(self):
         game1 = GameFactory(
             tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
         )
 
         response = self.client.post(f"/polecacz/remove_game_from_selected/{game1.id}")
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "/polecacz/game_list")
+        self.assertEqual(response.status_code, 405)
 
 
 class RecommendationListViewTest(TestCase):
@@ -626,10 +623,9 @@ class RecommendationCreateViewTest(TestCase):
         self.user.save()
         self.client.login(username="testuser", password="12345")
 
-    def test_create_recommendation_get_redirects(self):
+    def test_create_recommendation_get_405(self):
         response = self.client.get(f"/polecacz/create_recommendation/")
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "/polecacz/game/")
+        self.assertEqual(response.status_code, 405)
 
     def test_create_recommendation_create_recommendations(self):
         game1 = GameFactory(

@@ -229,15 +229,16 @@ class OpinionFormView(LoginRequiredMixin, SuccessMessageMixin, generic.FormView)
         return context
 
 
-@login_required
-def add_opinion(request: HttpRequest, pk: str):
-    """
-    Function responsible for adding opinion. Accepts only POST requests
-    :param request: Incoming HttpRequest with all data
-    :param pk: Recommendation id
-    """
+class AddOpinionView(LoginRequiredMixin, generic.View):
+
     name_map = {"Description": "Uwagi do rekomendacji", "Rating": "Ocena"}
-    if request.method == "POST":
+
+    def post(self, request: HttpRequest, pk: str):
+        """
+        Function responsible for adding opinion. Accepts only POST requests
+        :param request: Incoming HttpRequest with all data
+        :param pk: Recommendation id
+        """
         form = OpinionForm(request.POST)
         if form.is_valid():
             recommendation = RecommendationService.get_recommendation_by_id(id=pk)
@@ -252,24 +253,25 @@ def add_opinion(request: HttpRequest, pk: str):
             return render(
                 request=request,
                 template_name="./polecacz/create_opinion.html",
-                context={"form": form, "id": pk, "name_map": name_map},
+                context={"form": form, "id": pk, "name_map": self.name_map},
             )
-    else:
+
+    def get(self, request: HttpRequest, pk: str):
         form = OpinionForm()
-    return render(
-        request=request,
-        template_name="./polecacz/create_opinion.html",
-        context={"form": form, "id": pk, "name_map": name_map},
-    )
+        return render(
+            request=request,
+            template_name="./polecacz/create_opinion.html",
+            context={"form": form, "id": pk, "name_map": self.name_map},
+        )
 
 
-@login_required
-def game_search(request: HttpRequest) -> JsonResponse:
-    """
-    Function responsible for autocompletion feature in searchbar
-    :param request: Incoming HttpRequest with all data
-    """
-    if request.method == "GET":
+class GameSearchView(LoginRequiredMixin, generic.View):
+
+    def get(self, request: HttpRequest, *args, **kwargs) -> JsonResponse:
+        """
+        Method responsible for autocompletion feature in searchbar
+        :param request: Incoming HttpRequest with all data
+        """
         game = request.GET.get("game_name")
         payload = []
         if game:
@@ -281,8 +283,6 @@ def game_search(request: HttpRequest) -> JsonResponse:
                 payload.append(game_obj.name)
 
         return JsonResponse({"status": 200, "data": payload})
-    else:
-        return redirect("/polecacz/game_list")
 
 
 def _build_url_with_pagination_and_order(url: str, request: HttpRequest) -> str:
@@ -333,14 +333,14 @@ def _retrieve_attributes_from_request(
     return game, ordering, page, selected_categories, selected_mechanics
 
 
-@login_required
-def add_to_selected_games(request: HttpRequest, game_id: str):
-    """
-    Adds game to user selected games
-    :param request: Incoming HttpRequest with all data
-    :param game_id: Game id
-    """
-    if request.method == "GET":
+class AddGameToSelectedGamesView(LoginRequiredMixin, generic.View):
+
+    def get(self, request: HttpRequest, game_id: str, *args, **kwargs):
+        """
+        Adds game to user selected games
+        :param request: Incoming HttpRequest with all data
+        :param game_id: Game id
+        """
         game = GameService.get_game_by_id(id=game_id)
         selected_games_object, _ = SelectedGames.objects.get_or_create(
             user=request.user
@@ -352,18 +352,16 @@ def add_to_selected_games(request: HttpRequest, game_id: str):
                 reverse_lazy("polecacz:game_list"), request
             )
         )
-    else:
-        return redirect("/polecacz/game_list")
 
 
-@login_required
-def remove_from_selected_games(request: HttpRequest, game_id: str):
-    """
-    Removes game to user selected games
-    :param request: Incoming HttpRequest with all data
-    :param game_id: Game id
-    """
-    if request.method == "GET":
+class RemoveFromSelectedGamesView(LoginRequiredMixin, generic.View):
+
+    def get(self, request: HttpRequest, game_id: str):
+        """
+        Removes game to user selected games
+        :param request: Incoming HttpRequest with all data
+        :param game_id: Game id
+        """
         game = GameService.get_game_by_id(id=game_id)
         selected_games_object, _ = SelectedGames.objects.get_or_create(
             user=request.user
@@ -379,17 +377,14 @@ def remove_from_selected_games(request: HttpRequest, game_id: str):
                 reverse_lazy("polecacz:game_list"), request
             )
         )
-    else:
-        return redirect("/polecacz/game_list")
 
 
-@login_required
-def create_recommendation(request: HttpRequest):
-    """
-    Creates Recommendation object based on user selected games
-    :param request: Incoming HttpRequest with all data
-    """
-    if request.method == "POST":
+class CreateRecommendationView(LoginRequiredMixin, generic.View):
+    def post(self, request: HttpRequest):
+        """
+        Creates Recommendation object based on user selected games
+        :param request: Incoming HttpRequest with all data
+        """
         selected_games_obj = SelectedGamesService.get_selected_games_object_by_user(
             user=request.user
         )
@@ -407,26 +402,23 @@ def create_recommendation(request: HttpRequest):
             recommendation_object.selected_games.add(game)
             tag_list.extend(GameService.get_tag_names_list_from_game(game))
 
-        recommended_games_query = _create_recommendation_using_tags(games_ids, tag_list)
+        recommended_games_query = self._create_recommendation_using_tags(games_ids, tag_list)
         for game in recommended_games_query[:10]:
             recommendation_object.recommended_games.add(game)
         recommendation_object.save()
         selected_games_obj.selected_games.clear()
         selected_games_obj.save()
         return redirect("polecacz:recommendation_detail", recommendation_object.id)
-    else:
-        return redirect("polecacz:game_list")
 
-
-def _create_recommendation_using_tags(
-    used_games_ids: list[str], tag_list: list[str]
-) -> QuerySet:
-    """
-    Returns games in which were used similar mechanics and game categories
-    :param used_games_ids: List with game ids which were used to create recommendations
-    :param tag_list: List with tags used in games which were used to create recommendations
-    :return: QuerySet with games in which were used similar mechanics and game categories
-    """
-    recommended_games_query = GameService.find_most_similar_games(list(set(tag_list)))
-    recommended_games_query = recommended_games_query.exclude(id__in=used_games_ids)
-    return recommended_games_query
+    def _create_recommendation_using_tags(self,
+        used_games_ids: list[str], tag_list: list[str]
+    ) -> QuerySet:
+        """
+        Returns games in which were used similar mechanics and game categories
+        :param used_games_ids: List with game ids which were used to create recommendations
+        :param tag_list: List with tags used in games which were used to create recommendations
+        :return: QuerySet with games in which were used similar mechanics and game categories
+        """
+        recommended_games_query = GameService.find_most_similar_games(list(set(tag_list)))
+        recommended_games_query = recommended_games_query.exclude(id__in=used_games_ids)
+        return recommended_games_query

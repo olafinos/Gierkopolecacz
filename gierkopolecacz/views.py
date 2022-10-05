@@ -5,8 +5,10 @@ from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.contrib.auth import logout, get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpRequest
+from django.views import generic
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
@@ -16,16 +18,16 @@ from gierkopolecacz.forms import UserRegistrationForm
 from gierkopolecacz.tokens import account_activation_token
 
 
-def signup(request: HttpRequest):
-    """
-    View which allows to create account. When account is created is not active. To be in such state user needs to
-    activate account by using email sent to them
-    :param request: Incoming HttpRequest with all data
-    """
-    if request.user.is_authenticated:
-        return redirect("/")
+class SignupView(generic.View):
 
-    if request.method == "POST":
+    def post(self, request: HttpRequest):
+        """
+        View which allows to create account. When account is created is not active. To be in such state user needs to
+        activate account by using email sent to them
+        :param request: Incoming HttpRequest with all data
+        """
+        if request.user.is_authenticated:
+            return redirect("/")
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
@@ -38,14 +40,15 @@ def signup(request: HttpRequest):
                 request=request,
                 template_name="./registration/signup.html",
                 context={"form": form},
-            )
-    else:
+                )
+
+    def get(self, request: HttpRequest):
         form = UserRegistrationForm()
-    return render(
-        request=request,
-        template_name="./registration/signup.html",
-        context={"form": form},
-    )
+        return render(
+            request=request,
+            template_name="./registration/signup.html",
+            context={"form": form},
+        )
 
 
 def send_activation_email(request: HttpRequest, user: User, to_email: str):
@@ -102,40 +105,42 @@ def _send_email(
         )
 
 
-def activate(request: HttpRequest, uidb64: bytes, token: str):
-    """
-    Allows to activate user account by using their id and token
-    :param request: Incoming HttpRequest with all data
-    :param uidb64: User id decoded to base64 bytes object
-    :param token: Validation token
-    """
-    User = get_user_model()
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
+class ActivateView(generic.View):
 
-    if user is not None and account_activation_token.check_token(user, token):
-        user.is_active = True
-        user.save()
+    def get(self, request: HttpRequest, uidb64: bytes, token: str):
+        """
+        Allows to activate user account by using their id and token
+        :param request: Incoming HttpRequest with all data
+        :param uidb64: User id decoded to base64 bytes object
+        :param token: Validation token
+        """
+        User = get_user_model()
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
 
-        messages.success(
-            request,
-            "Dziękujemy za aktywację konta. Możesz teraz się do niego zalogować.",
-        )
-        return redirect("login")
-    else:
-        messages.error(request, "Link aktywacyjny jest niepoprawny!")
+        if user is not None and account_activation_token.check_token(user, token):
+            user.is_active = True
+            user.save()
 
-    return redirect("polecacz/")
+            messages.success(
+                request,
+                "Dziękujemy za aktywację konta. Możesz teraz się do niego zalogować.",
+            )
+            return redirect("login")
+        else:
+            messages.error(request, "Link aktywacyjny jest niepoprawny!")
+
+        return redirect("polecacz/")
 
 
-@login_required
-def logout_view(request: HttpRequest):
-    """
-    Allows user to logout
-    :param request: Incoming HttpRequest with all data
-    """
-    logout(request)
-    return redirect("polecacz/")
+class LogoutView(LoginRequiredMixin, generic.View):
+    def get(self, request: HttpRequest):
+        """
+        Allows user to logout
+        :param request: Incoming HttpRequest with all data
+        """
+        logout(request)
+        return redirect("polecacz/")
