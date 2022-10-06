@@ -388,7 +388,7 @@ class CreateRecommendationView(LoginRequiredMixin, generic.View):
         selected_games_obj = SelectedGamesService.get_selected_games_object_by_user(
             user=request.user
         )
-        games = SelectedGamesService.get_user_selected_games(user=request.user)
+        games = selected_games_obj.selected_games.all()
         if not games:
             return redirect("polecacz:selected_games")
 
