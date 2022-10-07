@@ -10,12 +10,12 @@ urlpatterns = [
     path("game/<uuid:pk>/", views.GameDetailView.as_view(), name="game_detail"),
     path("game_search/", views.GameSearchView.as_view()),
     path(
-        "add_game_to_selected/<uuid:game_id>",
+        "add_game_to_selected/<uuid:game_id>/",
         views.AddGameToSelectedGamesView.as_view(),
         name="add_game",
     ),
     path(
-        "remove_game_from_selected/<uuid:game_id>",
+        "remove_game_from_selected/<uuid:game_id>/",
         views.RemoveFromSelectedGamesView.as_view(),
         name="remove_game",
     ),
@@ -30,7 +30,7 @@ urlpatterns = [
         name="recommendation_list",
     ),
     path(
-        "recommendation/<uuid:pk>",
+        "recommendation/<uuid:pk>/",
         views.RecommendationDetailView.as_view(),
         name="recommendation_detail",
     ),
@@ -39,6 +39,6 @@ urlpatterns = [
         views.CreateRecommendationView.as_view(),
         name="create_recommendation",
     ),
-    path("opinion/<uuid:pk>", views.OpinionFormView.as_view(), name="create_opinion"),
-    path("opinion/create/<uuid:pk>", views.AddOpinionView.as_view(), name="add_opinion"),
+    path("opinion/<uuid:pk>/", views.OpinionFormView.as_view(), name="create_opinion"),
+    path("opinion/create/<uuid:pk>/", views.AddOpinionView.as_view(), name="add_opinion"),
 ]
