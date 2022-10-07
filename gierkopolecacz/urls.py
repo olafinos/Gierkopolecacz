@@ -19,8 +19,8 @@ from django.urls import path, include
 from .views import SignupView, LogoutView, ActivateView
 
 urlpatterns = [
-    path("", lambda req: redirect("/polecacz/")),
     path("polecacz/", include("polecacz.urls")),
+    path("", lambda req: redirect("/polecacz/")),
     path("admin/", admin.site.urls),
     path("", include("django.contrib.auth.urls")),
     path("signup", SignupView.as_view(), name="signup"),
