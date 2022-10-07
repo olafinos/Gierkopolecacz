@@ -23,7 +23,7 @@ urlpatterns = [
     path("", lambda req: redirect("/polecacz/")),
     path("admin/", admin.site.urls),
     path("", include("django.contrib.auth.urls")),
-    path("signup", SignupView.as_view(), name="signup"),
-    path("logout", LogoutView.as_view(), name="logout"),
-    path("activate/<uidb64>/<token>", ActivateView.as_view(), name="activate"),
+    path("signup/", SignupView.as_view(), name="signup"),
+    path("logout/", LogoutView.as_view(), name="logout"),
+    path("activate/<uidb64>/<token>/", ActivateView.as_view(), name="activate"),
 ]
