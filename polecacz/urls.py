@@ -20,9 +20,24 @@ urlpatterns = [
         name="remove_game",
     ),
     path(
+        "add_game_to_owned/<uuid:game_id>/",
+        views.AddGameToOwnedGamesView.as_view(),
+        name="add_to_owned_game",
+    ),
+    path(
+        "remove_game_from_owned/<uuid:game_id>/",
+        views.RemoveFromOwnedGamesView.as_view(),
+        name="remove_from_owned_game",
+    ),
+    path(
         "selected_games/",
         never_cache(views.SelectedGamesListView.as_view()),
         name="selected_games",
+    ),
+    path(
+        "owned_games/",
+        never_cache(views.OwnedGamesListView.as_view()),
+        name="owned_games",
     ),
     path(
         "recommendation/",

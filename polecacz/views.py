@@ -9,8 +9,8 @@ from django.views import generic
 
 from polecacz.bgg_api import CATEGORIES_MAP, MECHANICS_MAP
 from polecacz.forms import OpinionForm
-from polecacz.models import Game, Opinion, SelectedGames, Recommendation
-from polecacz.service import SelectedGamesService, RecommendationService, GameService
+from polecacz.models import Game, Opinion, SelectedGames, Recommendation, OwnedGames
+from polecacz.service import SelectedGamesService, RecommendationService, GameService, OwnedGamesService
 
 ORDER_MAPPING = {
     "rank": "Ranking rosnąco",
@@ -57,8 +57,11 @@ class GameDetailView(LoginRequiredMixin, generic.DetailView):
             context[
                 "selected_game"
             ] = game in SelectedGamesService.get_user_selected_games(user=user)
+            context["owned_game"] = game in OwnedGamesService.get_user_owned_games(user=user)
         except SelectedGames.DoesNotExist:
             context["selected_game"] = False
+        except OwnedGames.DoesNotExist:
+            context["owned_game"] = False
         return context
 
 
@@ -102,6 +105,7 @@ class GameListView(LoginRequiredMixin, generic.ListView):
         context["selected_games"] = SelectedGamesService().get_user_selected_games(
             self.request.user
         )
+        context["owned_games"] = OwnedGamesService.get_user_owned_games(self.request.user)
         context["ordering"] = ordering
         context["order_name"] = order_name
         context["mechanics"] = self.mechanics
@@ -159,6 +163,26 @@ class SelectedGamesListView(LoginRequiredMixin, generic.ListView):
             user=self.request.user
         )
         return SelectedGamesService.get_user_selected_games(self.request.user)
+
+
+class OwnedGamesListView(LoginRequiredMixin, generic.ListView):
+    """
+    View responsible for retrieving OwnedGames list
+    """
+
+    model = OwnedGames
+    template_name = "polecacz/owned_games.html"
+    login_url = "/login/"
+    context_object_name = "games_list"
+
+    def get_queryset(self):
+        """
+        Return the list of items for this view.
+        """
+        selected_games_object, _ = OwnedGames.objects.get_or_create(
+            user=self.request.user
+        )
+        return OwnedGamesService.get_user_owned_games(self.request.user)
 
 
 class RecommendationDetailView(LoginRequiredMixin, generic.DetailView):
@@ -354,11 +378,57 @@ class AddGameToSelectedGamesView(LoginRequiredMixin, generic.View):
         )
 
 
+class AddGameToOwnedGamesView(LoginRequiredMixin, generic.View):
+
+    def get(self, request: HttpRequest, game_id: str, *args, **kwargs):
+        """
+        Adds game to user owned games
+        :param request: Incoming HttpRequest with all data
+        :param game_id: Game id
+        """
+        game = GameService.get_game_by_id(id=game_id)
+        owned_games_object, _ = OwnedGames.objects.get_or_create(
+            user=request.user
+        )
+        owned_games_object.owned_games.add(game)
+        owned_games_object.save()
+        return redirect(
+            _build_url_with_pagination_and_order(
+                reverse_lazy("polecacz:game_list"), request
+            )
+        )
+
+
+class RemoveFromOwnedGamesView(LoginRequiredMixin, generic.View):
+
+    def get(self, request: HttpRequest, game_id: str):
+        """
+        Removes game from user owned games
+        :param request: Incoming HttpRequest with all data
+        :param game_id: Game id
+        """
+        game = GameService.get_game_by_id(id=game_id)
+        owned_games_object, _ = OwnedGames.objects.get_or_create(
+            user=request.user
+        )
+        owned_games_object.owned_games.remove(game)
+        owned_games_object.save()
+
+        if request.GET.get("redirect") == "owned_games":
+            return redirect("/polecacz/owned_games")
+
+        return redirect(
+            _build_url_with_pagination_and_order(
+                reverse_lazy("polecacz:game_list"), request
+            )
+        )
+
+
 class RemoveFromSelectedGamesView(LoginRequiredMixin, generic.View):
 
     def get(self, request: HttpRequest, game_id: str):
         """
-        Removes game to user selected games
+        Removes game from user selected games
         :param request: Incoming HttpRequest with all data
         :param game_id: Game id
         """
@@ -396,13 +466,13 @@ class CreateRecommendationView(LoginRequiredMixin, generic.View):
             user=request.user
         )
         games_ids = GameService.get_ids_from_game_queryset(games)
-
+        owned_games_ids = GameService.get_ids_from_game_queryset(OwnedGamesService.get_user_owned_games(user=request.user))
         tag_list = []
         for game in games:
             recommendation_object.selected_games.add(game)
             tag_list.extend(GameService.get_tag_names_list_from_game(game))
 
-        recommended_games_query = self._create_recommendation_using_tags(games_ids, tag_list)
+        recommended_games_query = self._create_recommendation_using_tags(games_ids, tag_list, owned_games_ids)
         for game in recommended_games_query[:10]:
             recommendation_object.recommended_games.add(game)
         recommendation_object.save()
@@ -411,7 +481,7 @@ class CreateRecommendationView(LoginRequiredMixin, generic.View):
         return redirect("polecacz:recommendation_detail", recommendation_object.id)
 
     def _create_recommendation_using_tags(self,
-        used_games_ids: list[str], tag_list: list[str]
+        used_games_ids: list[str], tag_list: list[str], owned_games_ids: list[str]
     ) -> QuerySet:
         """
         Returns games in which were used similar mechanics and game categories
@@ -420,5 +490,5 @@ class CreateRecommendationView(LoginRequiredMixin, generic.View):
         :return: QuerySet with games in which were used similar mechanics and game categories
         """
         recommended_games_query = GameService.find_most_similar_games(list(set(tag_list)))
-        recommended_games_query = recommended_games_query.exclude(id__in=used_games_ids)
+        recommended_games_query = recommended_games_query.exclude(id__in=used_games_ids+owned_games_ids)
         return recommended_games_query

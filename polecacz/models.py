@@ -6,8 +6,6 @@ from django.db import models
 from taggit.managers import TaggableManager
 from taggit.models import TaggedItemBase
 
-# Create your models here.
-
 
 class GameTag(TaggedItemBase):
     """
@@ -60,6 +58,14 @@ class SelectedGames(models.Model):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     selected_games = models.ManyToManyField(Game)
+
+
+class OwnedGames(models.Model):
+    """
+    OwnedGames model, keeps information about user owned games
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    owned_games = models.ManyToManyField(Game)
 
 
 class Opinion(models.Model):

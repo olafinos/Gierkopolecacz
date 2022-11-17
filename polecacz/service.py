@@ -3,7 +3,7 @@ from typing import Union
 from django.contrib.auth.models import User
 from django.http import Http404
 
-from polecacz.models import Game, SelectedGames, Recommendation
+from polecacz.models import Game, SelectedGames, Recommendation, OwnedGames
 from django.db.models import Count, QuerySet, Q
 
 
@@ -110,6 +110,34 @@ class SelectedGamesService:
         except SelectedGames.DoesNotExist:
             return []
         return selected_games
+
+
+class OwnedGamesService:
+    @staticmethod
+    def get_user_owned_games(user: User) -> Union[QuerySet, list]:
+        """
+        Get all games which user has own
+        :param user: User object
+        :return: Queryset with games owned by user
+        """
+        try:
+            user_owned = OwnedGames.objects.get(user=user)
+        except OwnedGames.DoesNotExist:
+            return []
+        return user_owned.owned_games.all()
+
+    @staticmethod
+    def get_owned_games_object_by_user(user: User) -> Union[QuerySet, list]:
+        """
+        Get all games which user has own
+        :param user: User object
+        :return: Queryset with games owned by user
+        """
+        try:
+            owned_games = OwnedGames.objects.get(user=user)
+        except OwnedGames.DoesNotExist:
+            return []
+        return owned_games
 
 
 class RecommendationService:

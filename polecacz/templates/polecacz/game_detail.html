@@ -26,8 +26,13 @@
             {% if not selected_game %}
             <a href="{% url 'polecacz:add_game' game.id %}" class="btn btn-outline-success add-btn"><strong>Dodaj grę do listy preferencji</strong></a>
             {% else %}
-            <button class="btn btn-outline-primary  disabled mr-1" ><strong>Ta gra została już dodana</strong></button>
             <a href="{% url 'polecacz:remove_game' game.id %}" class="btn btn-outline-danger"><strong>Usuń grę z listy preferencji</strong></a>
+            {% endif %}
+
+            {% if not owned_game %}
+            <a href="{% url 'polecacz:add_to_owned_game' game.id %}" class="btn btn-outline-success add-btn"><strong>Dodaj grę do listy posiadanych gier</strong></a>
+            {% else %}
+            <a href="{% url 'polecacz:remove_from_owned_game' game.id %}" class="btn btn-outline-danger"><strong>Usuń grę z listy posiadanych gier</strong></a>
             {% endif %}
     </div>
     </div>

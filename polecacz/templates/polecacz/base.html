@@ -118,6 +118,9 @@
              <a class="nav-link" href="{% url 'polecacz:selected_games' %}">Wybrane gry <span class="badge badge-light">{{ request.user|selected_games_count }} </span></a>
       </li>
         <li class="nav-item">
+             <a class="nav-link" href="{% url 'polecacz:owned_games' %}">Posiadane gry</a>
+      </li>
+        <li class="nav-item">
         <a class="nav-link" href="{% url 'logout' %}">Wyloguj się</a>
         </li>
       {% endif %}

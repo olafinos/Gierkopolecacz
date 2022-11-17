@@ -1,0 +1,27 @@
+{% extends 'polecacz/base.html' %}
+{% load static %}
+{% block title %}Lista posiadanych gier{% endblock %}
+{% block content %}
+<center><h2>Lista posiadanych przez Ciebie gier</h2></center>
+<br>
+{% if not games_list %}
+    <br>
+    <center><h4>Wygląda na to, że nie posiadasz jeszcze żadnych gier. Dodaj je, przechodząc do widoku <a href="{% url 'polecacz:game_list' %}" class="text-muted">listy gier</a></h4></center>
+{% endif %}
+{% for game in games_list %}
+    <div class="container p-3 my-3" style="border:2px solid #38220f;">
+        <div class="media">
+        <img src={{ game.thumbnail }} class="align-self-start mr-3" style=" border:2px solid #38220f;width:130px;height:130px"/>
+   <div class="media-body">
+       <h4 class="mt-0"><a href="{% url 'polecacz:game_detail' game.id %}" class="text-muted" >{{ game.name }}</a></h4>
+       <h6 class="mt-0"><strong>Ranking: </strong>{{ game.rank }}</h6>
+       <h6 class="mt-0"><strong>Średnia ocen: </strong>{{ game.rating }}</h6>
+       <h6 class="mt-0"><strong>Rok wydania: </strong>{{ game.year_published }}</h6>
+       <h6 class="mt-0"><strong>Minimalna liczba graczy: </strong>{{ game.min_players  }}</h6>
+       <h6 class="mt-0"><strong>Maksymalna liczba graczy: </strong>{{ game.max_players  }}</h6>
+  </div>
+            <a href="{% url 'polecacz:remove_from_owned_game' game.id %}?redirect=owned_games" class="btn btn-outline-danger"><strong>Usuń grę z listy posiadanych gier</strong></a>
+    </div>
+    </div>
+{% endfor %}
+{% endblock %}
