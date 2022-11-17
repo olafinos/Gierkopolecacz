@@ -7,7 +7,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from polecacz.models import SelectedGames, Recommendation, Opinion
+from polecacz.models import SelectedGames, Recommendation, Opinion, OwnedGames
 from test.factories.game import GameFactory
 
 
@@ -15,7 +15,7 @@ class UserViewTest(TestCase):
     def test_signup_not_valid_data(self):
         username = "a" * 200
         response = self.client.post(
-            "/signup",
+            "/signup/",
             data={
                 "username": username,
                 "password1": "validpassword1",
@@ -33,7 +33,7 @@ class UserViewTest(TestCase):
     @patch("gierkopolecacz.views.send_activation_email")
     def test_signup_valid_data(self, mocked_email):
         response = self.client.post(
-            "/signup",
+            "/signup/",
             data={
                 "username": "valid_username",
                 "password1": "validpassword1",
@@ -51,7 +51,7 @@ class UserViewTest(TestCase):
     @patch("django.core.mail.EmailMessage.send")
     def test_activate_email(self, mocked_email):
         response = self.client.post(
-            "/signup",
+            "/signup/",
             data={
                 "username": "valid_username1",
                 "password1": "validpassword1",
@@ -71,7 +71,7 @@ class UserViewTest(TestCase):
             is_active=False,
         )
         encoded_id = urlsafe_base64_encode(force_bytes(user.pk))
-        response = self.client.get(f"/activate/{encoded_id}/token")
+        response = self.client.get(f"/activate/{encoded_id}/token/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/login/")
         user = User.objects.get(username="username")
@@ -87,7 +87,7 @@ class UserViewTest(TestCase):
             is_active=False,
         )
         encoded_id = urlsafe_base64_encode(force_bytes(user.pk))
-        response = self.client.get(f"/activate/{encoded_id}/invalid_token")
+        response = self.client.get(f"/activate/{encoded_id}/invalid_token/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "polecacz/")
         user = User.objects.get(username="username")
@@ -208,6 +208,7 @@ class GameListViewTest(TestCase):
             response, f"<strong>Rok wydania:</strong>{game2.year_published}", html=True
         )
         self.assertContains(response, "Dodaj grę do listy preferencji", html=True)
+        self.assertContains(response, "Dodaj grę do listy posiadanych gier", html=True)
         self.assertContains(response, "Ranking rosnąco", html=True)
         self.assertTrue(response.context["object_list"][0] == game1)
 
@@ -387,6 +388,127 @@ class SelectedGamesListViewTest(TestCase):
         self.assertNotContains(response, game2.name, html=True)
 
 
+class OwnedGamesListViewTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+
+    def test_owned_games_list_view_owned_games_created(self):
+        with self.assertRaises(OwnedGames.DoesNotExist):
+            OwnedGames.objects.get(user__username="testuser")
+
+        response = self.client.get("/polecacz/owned_games/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(OwnedGames.objects.get(user__username="testuser"))
+
+    def test_owned_games_list_view_shows_owned_games(self):
+        owned_games_obj = OwnedGames.objects.create(user=self.user)
+        game1 = GameFactory(
+            tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
+        )
+        game2 = GameFactory(
+            tags=["Tag1", "Tag2", "Tag3"], rank=2, rating=9.00, name="AuperGame2"
+        )
+        owned_games_obj.owned_games.add(game1)
+        owned_games_obj.save()
+
+        response = self.client.get("/polecacz/owned_games/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, game1.name, html=True)
+        self.assertNotContains(response, game2.name, html=True)
+
+
+class AddToOwnedGamesTests(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+
+    def test_add_to_owned_games_adds_game(self):
+        game1 = GameFactory(
+            tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
+        )
+        response = self.client.get(f"/polecacz/add_game_to_owned/{game1.id}/")
+        owned_games_obj = OwnedGames.objects.get(user=self.user)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(game1 in owned_games_obj.owned_games.all())
+
+    def test_add_to_owned_games_proper_redirect(self):
+        game1 = GameFactory(
+            tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
+        )
+        response = self.client.get(
+            f"/polecacz/add_game_to_owned/{game1.id}/?ordering=rank&page=2&game_name=&selected_categories=Tag1&selected_mechanics=Tag2"
+        )
+        owned_games_obj = OwnedGames.objects.get(user=self.user)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(game1 in owned_games_obj.owned_games.all())
+        self.assertEqual(
+            response.url,
+            "/polecacz/game/?&ordering=rank&page=2&selected_categories=Tag1&selected_mechanics=Tag2",
+        )
+
+    def test_add_to_owned_games_post_405(self):
+        game1 = GameFactory(
+            tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
+        )
+        response = self.client.post(f"/polecacz/add_game_to_owned/{game1.id}/")
+        self.assertEqual(response.status_code, 405)
+
+
+class RemoveFromOwnedGamesTest(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+
+    def test_remove_from_owned_games_removes_game(self):
+        game1 = GameFactory(
+            tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
+        )
+        owned_games_obj = OwnedGames.objects.create(user=self.user)
+        owned_games_obj.owned_games.add(game1)
+        owned_games_obj.save()
+
+        response = self.client.get(f"/polecacz/remove_game_from_owned/{game1.id}/")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(game1 not in owned_games_obj.owned_games.all())
+
+    def test_remove_from_owned_games_proper_redirect(self):
+        game1 = GameFactory(
+            tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
+        )
+        owned_games_obj = OwnedGames.objects.create(user=self.user)
+        owned_games_obj.owned_games.add(game1)
+        owned_games_obj.save()
+
+        response = self.client.get(
+            f"/polecacz/remove_game_from_owned/{game1.id}/?ordering=rank&page=2&game_name=&selected_categories=Tag1&selected_mechanics=Tag2/"
+        )
+        owned_games_obj = OwnedGames.objects.get(user=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(game1 not in owned_games_obj.owned_games.all())
+        self.assertEqual(
+            response.url,
+            "/polecacz/game/?&ordering=rank&page=2&selected_categories=Tag1&selected_mechanics=Tag2/",
+        )
+
+    def test_remove_from_owned_games_post_405(self):
+        game1 = GameFactory(
+            tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
+        )
+
+        response = self.client.post(f"/polecacz/remove_game_from_owned/{game1.id}/")
+        self.assertEqual(response.status_code, 405)
+
+
 class AddToSelectedGamesTests(TestCase):
     def setUp(self) -> None:
         self.user = User.objects.create(username="testuser")
@@ -398,7 +520,7 @@ class AddToSelectedGamesTests(TestCase):
         game1 = GameFactory(
             tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
         )
-        response = self.client.get(f"/polecacz/add_game_to_selected/{game1.id}")
+        response = self.client.get(f"/polecacz/add_game_to_selected/{game1.id}/")
         selected_games_obj = SelectedGames.objects.get(user=self.user)
 
         self.assertEqual(response.status_code, 302)
@@ -409,7 +531,7 @@ class AddToSelectedGamesTests(TestCase):
             tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
         )
         response = self.client.get(
-            f"/polecacz/add_game_to_selected/{game1.id}?ordering=rank&page=2&game_name=&selected_categories=Tag1&selected_mechanics=Tag2"
+            f"/polecacz/add_game_to_selected/{game1.id}/?ordering=rank&page=2&game_name=&selected_categories=Tag1&selected_mechanics=Tag2/"
         )
         selected_games_obj = SelectedGames.objects.get(user=self.user)
 
@@ -417,14 +539,14 @@ class AddToSelectedGamesTests(TestCase):
         self.assertTrue(game1 in selected_games_obj.selected_games.all())
         self.assertEqual(
             response.url,
-            "/polecacz/game/?&ordering=rank&page=2&selected_categories=Tag1&selected_categories=Tag2",
+            "/polecacz/game/?&ordering=rank&page=2&selected_categories=Tag1&selected_mechanics=Tag2/",
         )
 
     def test_add_to_selected_games_post_405(self):
         game1 = GameFactory(
             tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
         )
-        response = self.client.post(f"/polecacz/add_game_to_selected/{game1.id}")
+        response = self.client.post(f"/polecacz/add_game_to_selected/{game1.id}/")
         self.assertEqual(response.status_code, 405)
 
 
@@ -443,7 +565,7 @@ class RemoveFromSelectedGamesTest(TestCase):
         selected_games_obj.selected_games.add(game1)
         selected_games_obj.save()
 
-        response = self.client.get(f"/polecacz/remove_game_from_selected/{game1.id}")
+        response = self.client.get(f"/polecacz/remove_game_from_selected/{game1.id}/")
         self.assertEqual(response.status_code, 302)
         self.assertTrue(game1 not in selected_games_obj.selected_games.all())
 
@@ -456,14 +578,14 @@ class RemoveFromSelectedGamesTest(TestCase):
         selected_games_obj.save()
 
         response = self.client.get(
-            f"/polecacz/remove_game_from_selected/{game1.id}?ordering=rank&page=2&game_name=&selected_categories=Tag1&selected_mechanics=Tag2"
+            f"/polecacz/remove_game_from_selected/{game1.id}/?ordering=rank&page=2&game_name=&selected_categories=Tag1&selected_mechanics=Tag2/"
         )
         selected_games_obj = SelectedGames.objects.get(user=self.user)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(game1 not in selected_games_obj.selected_games.all())
         self.assertEqual(
             response.url,
-            "/polecacz/game/?&ordering=rank&page=2&selected_categories=Tag1&selected_categories=Tag2",
+            "/polecacz/game/?&ordering=rank&page=2&selected_categories=Tag1&selected_mechanics=Tag2/",
         )
 
     def test_remove_from_selected_games_post_405(self):
@@ -471,7 +593,7 @@ class RemoveFromSelectedGamesTest(TestCase):
             tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="ZuperGame"
         )
 
-        response = self.client.post(f"/polecacz/remove_game_from_selected/{game1.id}")
+        response = self.client.post(f"/polecacz/remove_game_from_selected/{game1.id}/")
         self.assertEqual(response.status_code, 405)
 
 
@@ -541,7 +663,7 @@ class RecommendationDetailViewTest(TestCase):
         recommendation.recommended_games.add(game3)
         recommendation.save()
 
-        response = self.client.get(f"/polecacz/recommendation/{recommendation.id}")
+        response = self.client.get(f"/polecacz/recommendation/{recommendation.id}/")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Oto Twoja rekomendacja")
         self.assertContains(response, game1.thumbnail)
@@ -564,7 +686,7 @@ class OpinionFormViewTest(TestCase):
 
     def test_opinion_form_view_shows_form(self):
         recommendation = Recommendation.objects.create(user=self.user)
-        response = self.client.get(f"/polecacz/opinion/{recommendation.id}")
+        response = self.client.get(f"/polecacz/opinion/{recommendation.id}/")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Zostaw opinie")
         self.assertContains(response, "Ocena:")
@@ -582,7 +704,7 @@ class OpinionCreateViewTest(TestCase):
         recommendation = Recommendation.objects.create(user=self.user)
         self.assertFalse(recommendation.opinion_created)
         response = self.client.post(
-            f"/polecacz/opinion/create/{recommendation.id}",
+            f"/polecacz/opinion/create/{recommendation.id}/",
             data={"description": "TestDescription", "rating": 2},
         )
         self.assertEqual(response.status_code, 302)
@@ -596,7 +718,7 @@ class OpinionCreateViewTest(TestCase):
     def test_opinion_create_view_returns_errors(self):
         recommendation = Recommendation.objects.create(user=self.user)
         response = self.client.post(
-            f"/polecacz/opinion/create/{recommendation.id}",
+            f"/polecacz/opinion/create/{recommendation.id}/",
             data={"description": "T" * 1000, "rating": 2},
         )
         self.assertEqual(response.status_code, 200)
@@ -607,7 +729,7 @@ class OpinionCreateViewTest(TestCase):
 
         recommendation = Recommendation.objects.create(user=self.user)
         response = self.client.post(
-            f"/polecacz/opinion/create/{recommendation.id}",
+            f"/polecacz/opinion/create/{recommendation.id}/",
             data={"description": "T" * 10, "rating": 12},
         )
         self.assertContains(response, "Popraw następujące pola")
@@ -647,9 +769,40 @@ class RecommendationCreateViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
         recommendation = Recommendation.objects.filter(user=self.user).first()
-        self.assertEqual(response.url, f"/polecacz/recommendation/{recommendation.id}")
+        self.assertEqual(response.url, f"/polecacz/recommendation/{recommendation.id}/")
         self.assertEqual(len(recommendation.recommended_games.all()), 1)
         self.assertTrue(game3 in recommendation.recommended_games.all())
+
+        selected_games_obj = SelectedGames.objects.get(id=selected_games_obj.id)
+        self.assertEqual(len(selected_games_obj.selected_games.all()), 0)
+
+    def test_create_recommendation_create_recommendations_excludes_owned_game(self):
+        game1 = GameFactory(
+            tags=["Tag1", "Tag2"], rank=1, rating=9.02, name="ZuperGame1"
+        )
+        game2 = GameFactory(tags=["Tag2"], rank=2, rating=9.01, name="ZuperGame2")
+        game3 = GameFactory(
+            tags=["Tag1", "Tag2", "Tag3"],
+            rank=5,
+            rating=8.92,
+            name="SuperRecommendation",
+        )
+        selected_games_obj = SelectedGames.objects.create(user=self.user)
+        selected_games_obj.selected_games.add(game1)
+        selected_games_obj.save()
+
+        owned_games_obj = OwnedGames.objects.create(user=self.user)
+        owned_games_obj.owned_games.add(game2)
+        owned_games_obj.save()
+
+        response = self.client.post(f"/polecacz/create_recommendation/")
+        self.assertEqual(response.status_code, 302)
+
+        recommendation = Recommendation.objects.filter(user=self.user).first()
+        self.assertEqual(response.url, f"/polecacz/recommendation/{recommendation.id}/")
+        self.assertEqual(len(recommendation.recommended_games.all()), 1)
+        self.assertTrue(game3 in recommendation.recommended_games.all())
+        self.assertTrue(game2 not in recommendation.recommended_games.all())
 
         selected_games_obj = SelectedGames.objects.get(id=selected_games_obj.id)
         self.assertEqual(len(selected_games_obj.selected_games.all()), 0)

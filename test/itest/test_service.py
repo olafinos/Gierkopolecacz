@@ -4,8 +4,8 @@ from django.contrib.auth.models import User
 from django.http import Http404
 from django.test import TestCase
 
-from polecacz.models import SelectedGames, Recommendation
-from polecacz.service import GameService, SelectedGamesService, RecommendationService
+from polecacz.models import SelectedGames, Recommendation, OwnedGames
+from polecacz.service import GameService, SelectedGamesService, RecommendationService, OwnedGamesService
 from test.factories.game import GameFactory
 
 
@@ -115,6 +115,30 @@ class TestSelectedGamesService(TestCase):
     def test_get_selected_games_object_by_user(self):
         result = SelectedGamesService.get_selected_games_object_by_user(self.user)
         self.assertEqual(result.id, self.selected_games_object.id)
+
+
+class TestOwnedGamesService(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+        self.game_1 = GameFactory(tags=["Tag1", "Tag2", "Tag3"], rating=9.9, name='game1')
+        self.game_2 = GameFactory(tags=["Tag1", "Tag2"], rating=9.0, name='game2')
+        self.owned_games_object = OwnedGames.objects.create(user=self.user)
+
+    def test_get_user_owned_games(self):
+        for game in [self.game_1, self.game_2]:
+            self.owned_games_object.owned_games.add(game)
+        self.owned_games_object.save()
+        result = OwnedGamesService.get_user_owned_games(self.user)
+        self.assertTrue(self.game_1 in result)
+        self.assertTrue(self.game_2 in result)
+
+    def test_get_owned_games_object_by_user(self):
+        result = OwnedGamesService.get_owned_games_object_by_user(self.user)
+        self.assertEqual(result.id, self.owned_games_object.id)
 
 
 class TestRecommendationService(TestCase):

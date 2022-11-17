@@ -337,7 +337,7 @@ def _build_url_with_pagination_and_order(url: str, request: HttpRequest) -> str:
             url += f"&selected_categories={category}"
     if selected_mechanics:
         for mechanics in selected_mechanics:
-            url += f"&selected_categories={mechanics}"
+            url += f"&selected_mechanics={mechanics}"
     return url
 
 
@@ -461,12 +461,17 @@ class CreateRecommendationView(LoginRequiredMixin, generic.View):
         games = selected_games_obj.selected_games.all()
         if not games:
             return redirect("polecacz:selected_games")
+        owned_games_obj = OwnedGamesService.get_owned_games_object_by_user(user=request.user)
+        if owned_games_obj:
+            owned_games = owned_games_obj.owned_games.all()
+            owned_games_ids = GameService.get_ids_from_game_queryset(owned_games) if owned_games else []
+        else:
+            owned_games_ids = []
 
         recommendation_object = RecommendationService.create_recommendation(
             user=request.user
         )
         games_ids = GameService.get_ids_from_game_queryset(games)
-        owned_games_ids = GameService.get_ids_from_game_queryset(OwnedGamesService.get_user_owned_games(user=request.user))
         tag_list = []
         for game in games:
             recommendation_object.selected_games.add(game)

@@ -11,7 +11,7 @@ class UserRegistrationFormTests(TestCase):
     def test_username_too_long(self):
         username = "a" * 200
         response = self.client.post(
-            "/signup",
+            "/signup/",
             data={
                 "username": username,
                 "password1": self.valid_password,
@@ -29,7 +29,7 @@ class UserRegistrationFormTests(TestCase):
     def test_email_not_valid(self):
         email = "abc"
         response = self.client.post(
-            "/signup",
+            "/signup/",
             data={
                 "email": email,
                 "password1": self.valid_password,
@@ -44,7 +44,7 @@ class UserRegistrationFormTests(TestCase):
         password1 = "abc12345"
         password2 = "eabc12345"
         response = self.client.post(
-            "/signup",
+            "/signup/",
             data={
                 "password1": password1,
                 "password2": password2,
@@ -56,14 +56,14 @@ class UserRegistrationFormTests(TestCase):
         self.assertContains(response, "Hasła w obu polach nie są zgodne.", html=True)
 
     def test_get(self):
-        response = self.client.get("/signup")
+        response = self.client.get("/signup/")
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(response, "<h2>Zarejestruj się</h2>", html=True)
 
     def test_post_success(self):
         response = self.client.post(
-            "/signup",
+            "/signup/",
             data={
                 "username": self.valid_username,
                 "email": self.valid_email,
@@ -77,7 +77,7 @@ class UserRegistrationFormTests(TestCase):
 
     def test_post_error(self):
         response = self.client.post(
-            "/signup",
+            "/signup/",
             data={
                 "email": "mailniepoprawny",
                 "password1": self.valid_password,
