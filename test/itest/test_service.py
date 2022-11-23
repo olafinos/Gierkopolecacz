@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 from django.http import Http404
 from django.test import TestCase
 
-from polecacz.models import SelectedGames, Recommendation, OwnedGames
-from polecacz.service import GameService, SelectedGamesService, RecommendationService, OwnedGamesService
+from polecacz.models import SelectedGames, Recommendation, OwnedGames, ImageMetadata
+from polecacz.service import GameService, SelectedGamesService, RecommendationService, OwnedGamesService, \
+    ImageMetadataService
 from test.factories.game import GameFactory
 
 
@@ -115,6 +116,53 @@ class TestSelectedGamesService(TestCase):
     def test_get_selected_games_object_by_user(self):
         result = SelectedGamesService.get_selected_games_object_by_user(self.user)
         self.assertEqual(result.id, self.selected_games_object.id)
+
+
+class TestImageMetadataService(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+        self.game_1 = GameFactory(tags=["Tag1", "Tag2", "Tag3"], rating=9.9, name='game1')
+        self.game_2 = GameFactory(tags=["Tag1", "Tag2"], rating=9.0, name='game2')
+        self.image_name = 'image.jpg'
+        self.download_token = 'token123'
+        self.image_metadata1 = ImageMetadata.objects.create(user=self.user, game=self.game_1,
+                                                            image_name=self.image_name,
+                                                            download_token=self.download_token)
+        self.image_metadata2 = ImageMetadata.objects.create(user=self.user, game=self.game_2,
+                                                            image_name=self.image_name,
+                                                            download_token=self.download_token)
+        self.image_metadata1.save()
+        self.image_metadata2.save()
+
+    def test_get_user_images_names_with_tokens_added_to_game(self):
+        images_names_with_tokens = ImageMetadataService.get_user_images_names_with_tokens_added_to_game(self.user, self.game_1)
+        expected = [(self.image_name, self.download_token)]
+        self.assertEqual(images_names_with_tokens, expected)
+
+    def test_get_game_images(self):
+        user = User.objects.create(username="otheruser")
+        user.set_password("12345")
+        user.save()
+        image_name = 'other_image.jpg'
+        image_metadata = ImageMetadata.objects.create(user=user, game=self.game_1,
+                                                            image_name=image_name,
+                                                            download_token=self.download_token)
+        image_metadata.save()
+        images_names_with_tokens = ImageMetadataService.get_game_images_with_tokens(self.game_1)
+        expected = [(self.image_name, self.download_token), (image_name, self.download_token)]
+        self.assertEqual(images_names_with_tokens, expected)
+
+    def test_get_token(self):
+        token = ImageMetadataService.get_token(self.user, self.game_1, self.image_name)
+        self.assertEqual(token, self.download_token)
+
+    def test_get_image_metadata_object(self):
+        image_metadata_object = ImageMetadataService.get_image_metadata_object(self.user, self.game_1, self.image_name)
+        self.assertEqual(image_metadata_object, self.image_metadata1)
 
 
 class TestOwnedGamesService(TestCase):

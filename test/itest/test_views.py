@@ -1,13 +1,15 @@
-from datetime import datetime
 from http import HTTPStatus
 from unittest.mock import patch, ANY
 
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth.models import User
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.contrib.auth.models import User
 from django.test import TestCase
 
-from polecacz.models import SelectedGames, Recommendation, Opinion, OwnedGames
+from polecacz.models import SelectedGames, Recommendation, Opinion, OwnedGames, ImageMetadata
+from polecacz.validators import TooBigFileException
 from test.factories.game import GameFactory
 
 
@@ -117,7 +119,8 @@ class GameDetailViewTest(TestCase):
         self.user.save()
         self.client.login(username="testuser", password="12345")
 
-    def test_game_detail_view(self):
+    @patch("polecacz.service.pyrebase")
+    def test_game_detail_view(self, mocked_firebase_service):
         game = GameFactory(
             tags=["Tag1", "Tag2", "Tag3"], rank=1, rating=9.02, name="SuperGame"
         )
@@ -806,3 +809,87 @@ class RecommendationCreateViewTest(TestCase):
 
         selected_games_obj = SelectedGames.objects.get(id=selected_games_obj.id)
         self.assertEqual(len(selected_games_obj.selected_games.all()), 0)
+
+
+class TestRemoveImageView(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+        self.game1 = GameFactory(
+            tags=["Tag1", "Tag2"], rank=1, rating=9.02, name="ZuperGame1"
+        )
+        self.path_to_image = "test/itest/image.jpg"
+        self.token = 'token123'
+        self.image_name = 'image.jpg'
+        self.image_metadata = ImageMetadata.objects.create(user=self.user, game=self.game1, download_token=self.token, image_name=self.image_name)
+
+    @patch("polecacz.service.FirebaseStorageService.remove_image")
+    @patch("polecacz.service.pyrebase")
+    def test_image_removed_successfully(self, mocked_pyrebase, mocked_remove_image):
+        image_metadata = ImageMetadata.objects.filter(user=self.user, game=self.game1, image_name=self.image_name,
+                                                      download_token=self.token).first()
+        self.assertTrue(image_metadata)
+        response = self.client.get(f"/polecacz/remove_image/{self.game1.id}/?image_name={self.image_name}")
+        image_metadata = ImageMetadata.objects.filter(user=self.user, game=self.game1, image_name=self.image_name,
+                                                      download_token=self.token).first()
+        self.assertFalse(image_metadata)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, f"/polecacz/game/{self.game1.id}/")
+
+
+class TestAddImageView(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="testuser", password="12345")
+        self.game1 = GameFactory(
+            tags=["Tag1", "Tag2"], rank=1, rating=9.02, name="ZuperGame1"
+        )
+        self.path_to_image = "test/itest/image.jpg"
+        self.token = 'token123'
+
+    @patch("polecacz.service.FirebaseStorageService.insert_image")
+    @patch("polecacz.service.pyrebase")
+    def test_add_image_successfully(self, mocked_pyrebase, mocked_insert_image):
+        with open(self.path_to_image, 'rb') as file:
+            mocked_insert_image.return_value = {'downloadTokens': self.token}
+            image_metadata = ImageMetadata.objects.filter(user=self.user, game=self.game1, image_name='image.jpg', download_token=self.token).first()
+            self.assertFalse(image_metadata)
+            response = self.client.post(f"/polecacz/add_image/{self.game1.id}/", {'uploaded_file': file})
+            self.assertEqual(response.status_code, 302)
+            image_metadata = ImageMetadata.objects.filter(user=self.user, game=self.game1, image_name='image.jpg', download_token=self.token).first()
+            self.assertTrue(image_metadata)
+            self.assertEqual(response.url, f"/polecacz/game/{self.game1.id}/")
+
+    @patch("polecacz.views.validate_file_size")
+    @patch("polecacz.service.FirebaseStorageService.insert_image")
+    @patch("polecacz.service.pyrebase")
+    def test_image_size_too_big(self, mocked_pyrebase, mocked_insert_image, mocked_file_size_validator):
+        with open(self.path_to_image, 'rb') as file:
+            mocked_file_size_validator.side_effect = TooBigFileException()
+            mocked_insert_image.return_value = {'downloadTokens': self.token}
+            image_metadata = ImageMetadata.objects.filter(user=self.user, game=self.game1, image_name='image.jpg', download_token=self.token).first()
+            self.assertFalse(image_metadata)
+            response = self.client.post(f"/polecacz/add_image/{self.game1.id}/", {'uploaded_file': file})
+            self.assertEqual(response.status_code, 302)
+            image_metadata = ImageMetadata.objects.filter(user=self.user, game=self.game1, image_name='image.jpg', download_token=self.token).first()
+            self.assertFalse(image_metadata)
+            self.assertEqual(response.url, f"/polecacz/game/{self.game1.id}/")
+
+    @patch("polecacz.views.validate_file_extension")
+    @patch("polecacz.service.FirebaseStorageService.insert_image")
+    @patch("polecacz.service.pyrebase")
+    def test_image_wrong_extension(self, mocked_pyrebase, mocked_insert_image, mocked_file_extension_validator):
+        with open(self.path_to_image, 'rb') as file:
+            mocked_file_extension_validator.side_effect = ValidationError('Unsupported file extension.')
+            mocked_insert_image.return_value = {'downloadTokens': self.token}
+            image_metadata = ImageMetadata.objects.filter(user=self.user, game=self.game1, image_name='image.jpg', download_token=self.token).first()
+            self.assertFalse(image_metadata)
+            response = self.client.post(f"/polecacz/add_image/{self.game1.id}/", {'uploaded_file': file})
+            self.assertEqual(response.status_code, 302)
+            image_metadata = ImageMetadata.objects.filter(user=self.user, game=self.game1, image_name='image.jpg', download_token=self.token).first()
+            self.assertFalse(image_metadata)
+            self.assertEqual(response.url, f"/polecacz/game/{self.game1.id}/")

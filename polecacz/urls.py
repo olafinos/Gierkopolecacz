@@ -24,6 +24,14 @@ urlpatterns = [
         views.AddGameToOwnedGamesView.as_view(),
         name="add_to_owned_game",
     ),
+    path("add_image/<uuid:game_id>/",
+         views.AddImageView.as_view(),
+         name="add_image"
+    ),
+    path("remove_image/<uuid:game_id>/",
+         views.RemoveImageView.as_view(),
+         name="remove_image"
+         ),
     path(
         "remove_game_from_owned/<uuid:game_id>/",
         views.RemoveFromOwnedGamesView.as_view(),

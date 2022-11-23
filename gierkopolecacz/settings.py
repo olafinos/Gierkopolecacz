@@ -136,7 +136,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "root")
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -147,7 +147,7 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_FROM = "horyzont2022bgg@gmail.com"
 EMAIL_HOST_USER = "horyzont2022bgg@gmail.com"
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", None)
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", 'None')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
@@ -155,3 +155,6 @@ PASSWORD_RESET_TIMEOUT = 14400
 
 LOGIN_REDIRECT_URL = "polecacz:index"
 LOGOUT_REDIRECT_URL = "polecacz:index"
+
+storage_config = {
+}

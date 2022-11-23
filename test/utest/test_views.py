@@ -23,4 +23,4 @@ class TestPolecaczViews(TestCase):
             '/some_path/?ordering=rank&page=1&game_name=name&selected_categories=abc&selected_mechanics=ef')
         url = 'some_other_path'
         self.assertEqual(_build_url_with_pagination_and_order(url, request),
-                         'some_other_path?&ordering=rank&page=1&game_name=name&selected_categories=abc&selected_categories=ef')
+                         'some_other_path?&ordering=rank&page=1&game_name=name&selected_categories=abc&selected_mechanics=ef')

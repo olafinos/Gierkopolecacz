@@ -1,16 +1,22 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ValidationError
+from django.core.files.storage import default_storage
 from django.db.models import QuerySet
 from django.http import JsonResponse, HttpRequest
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.utils.datastructures import MultiValueDictKeyError
 from django.views import generic
 
+from gierkopolecacz.settings import MEDIA_ROOT
 from polecacz.bgg_api import CATEGORIES_MAP, MECHANICS_MAP
 from polecacz.forms import OpinionForm
-from polecacz.models import Game, Opinion, SelectedGames, Recommendation, OwnedGames
-from polecacz.service import SelectedGamesService, RecommendationService, GameService, OwnedGamesService
+from polecacz.models import Game, Opinion, SelectedGames, Recommendation, OwnedGames, ImageMetadata
+from polecacz.service import SelectedGamesService, RecommendationService, GameService, OwnedGamesService, \
+    FirebaseStorageService, ImageMetadataService
+from polecacz.validators import validate_file_extension, validate_file_size, TooBigFileException
 
 ORDER_MAPPING = {
     "rank": "Ranking rosnąco",
@@ -50,10 +56,18 @@ class GameDetailView(LoginRequiredMixin, generic.DetailView):
         """
         Get the context for this view.
         """
+        firebase_storage = FirebaseStorageService()
         context = super(GameDetailView, self).get_context_data(**kwargs)
         user = self.request.user
         game = GameService.get_game_by_id(self.kwargs["pk"])
+        user_images = ImageMetadataService.get_image_metadata_objects_for_user_and_game(user=user, game_id=game.id)
+        urls_to_user_images = [(firebase_storage.get_url_for_image(storage_path=f"images/{game.id}/{user.username}/{user_image.image_name}", token=user_image.download_token), user_image) for user_image in user_images]
+        game_images = ImageMetadataService.get_game_images_with_tokens(game_id=game.id)
+        urls_to_game_images = [firebase_storage.get_url_for_image(storage_path=f"images/{game.id}/{user.username}/{game_image[0]}", token=game_image[1]) for
+                               game_image in game_images]
         try:
+            context['urls_to_user_images'] = urls_to_user_images
+            context['urls_to_game_images'] = urls_to_game_images
             context[
                 "selected_game"
             ] = game in SelectedGamesService.get_user_selected_games(user=user)
@@ -63,6 +77,51 @@ class GameDetailView(LoginRequiredMixin, generic.DetailView):
         except OwnedGames.DoesNotExist:
             context["owned_game"] = False
         return context
+
+
+class AddImageView(LoginRequiredMixin, generic.View):
+
+    def post(self, request, *args, **kwargs):
+        firebase_service = FirebaseStorageService()
+        try:
+            file = request.FILES['uploaded_file']
+            validate_file_extension(file.name)
+            validate_file_size(file.size)
+            file_save = default_storage.save(file.name, file)
+            path_to_file = f"{MEDIA_ROOT}/{file.name}"
+            path_on_storage = f'images/{self.kwargs["game_id"]}/{self.request.user.username}/{file.name}'
+            response = firebase_service.insert_image(path_to_file, path_on_storage)
+            image_metadata = ImageMetadata.objects.update_or_create(user=self.request.user,
+                                                                    game_id=self.kwargs['game_id'],
+                                                                    image_name=file.name,
+                                                                    defaults={'download_token': response['downloadTokens']})
+            image_metadata[0].save()
+            messages.success(request, "Zdjęcie zostało zapisane")
+            delete = default_storage.delete(file.name)
+        except TooBigFileException as e:
+            messages.error(request, "Za duży rozmiar pliku. Maksymalna akceptowalna wartość to 6MB")
+        except ValidationError as e:
+            messages.error(request, "Niepoprawny typ pliku. Akceptowalne typy to: .jpg oraz .png")
+        except Exception as e:
+            messages.error(request, "Nastąpił błąd w trakcie dodawania zdjęcia")
+        return redirect("polecacz:game_detail", self.kwargs["game_id"])
+
+
+class RemoveImageView(LoginRequiredMixin, generic.View):
+
+    def get(self, request, *args, **kwargs):
+        firebase_service = FirebaseStorageService()
+        image_name = request.GET.get('image_name', '')
+        try:
+            token = ImageMetadataService.get_token(user=request.user, game_id=self.kwargs["game_id"], image_name=image_name)
+            path_on_storage = f'images/{self.kwargs["game_id"]}/{self.request.user.username}/{image_name}'
+            firebase_service.remove_image(path_on_storage, token)
+            image_metadata = ImageMetadataService.get_image_metadata_object(user=request.user, game_id=self.kwargs["game_id"], image_name=image_name)
+            image_metadata.delete()
+            messages.success(request, "Zdjęcie zostało usunięte")
+        except Exception as e:
+            messages.error(request, "Zdjęcie nie zostało usunięte")
+        return redirect("polecacz:game_detail", self.kwargs["game_id"])
 
 
 class GameListView(LoginRequiredMixin, generic.ListView):
@@ -272,7 +331,7 @@ class AddOpinionView(LoginRequiredMixin, generic.View):
             opinion.save()
             recommendation.opinion_created = True
             recommendation.save()
-            return redirect("/polecacz/recommendation")
+            return redirect("polecacz:recommendation_list")
         else:
             return render(
                 request=request,
@@ -371,6 +430,10 @@ class AddGameToSelectedGamesView(LoginRequiredMixin, generic.View):
         )
         selected_games_object.selected_games.add(game)
         selected_games_object.save()
+
+        if request.GET.get("redirect") == "game_detail":
+            return redirect("polecacz:game_detail", game_id)
+
         return redirect(
             _build_url_with_pagination_and_order(
                 reverse_lazy("polecacz:game_list"), request
@@ -392,6 +455,10 @@ class AddGameToOwnedGamesView(LoginRequiredMixin, generic.View):
         )
         owned_games_object.owned_games.add(game)
         owned_games_object.save()
+
+        if request.GET.get("redirect") == "game_detail":
+            return redirect("polecacz:game_detail", game_id)
+
         return redirect(
             _build_url_with_pagination_and_order(
                 reverse_lazy("polecacz:game_list"), request
@@ -415,7 +482,10 @@ class RemoveFromOwnedGamesView(LoginRequiredMixin, generic.View):
         owned_games_object.save()
 
         if request.GET.get("redirect") == "owned_games":
-            return redirect("/polecacz/owned_games")
+            return redirect("polecacz:owned_games")
+
+        if request.GET.get("redirect") == "game_detail":
+            return redirect("polecacz:game_detail", game_id)
 
         return redirect(
             _build_url_with_pagination_and_order(
@@ -440,7 +510,10 @@ class RemoveFromSelectedGamesView(LoginRequiredMixin, generic.View):
         selected_games_object.save()
 
         if request.GET.get("redirect") == "selected_games":
-            return redirect("/polecacz/selected_games")
+            return redirect("polecacz:selected_games")
+
+        if request.GET.get("redirect") == "game_detail":
+            return redirect("polecacz:game_detail", game_id)
 
         return redirect(
             _build_url_with_pagination_and_order(

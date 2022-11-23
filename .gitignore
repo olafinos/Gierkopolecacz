@@ -1,4 +1,3 @@
-dane.json
 venv
 *.pyc
 /dist/

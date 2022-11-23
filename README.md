@@ -32,5 +32,6 @@ Przed wykonaniem następujących kroków zaleca się, stworzenie osobnego wirtua
 7. Dodanie do zmiennych środowiskowych klucza dla skrzynki SMTP
    1. nazwa zmiennej: `EMAIL_HOST_PASSWORD`
    2. wartość zmiennej: `hisexoazuyyyivcq`
-8. Uruchomienie aplikacji
+8. Dodanie do zmiennej `storage_config` w pliku `/gierkopolecacz/settings.py` wartości, która znajduje się w zakodowanym pliku `firebase.txt`, przy pomocy BASE64. Aby je odkodować wystarczy wkleić zawartość pliku np. do strony https://www.base64decode.org/
+9. Uruchomienie aplikacji
    1. `python manage.py runserver`

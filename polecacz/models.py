@@ -68,6 +68,17 @@ class OwnedGames(models.Model):
     owned_games = models.ManyToManyField(Game)
 
 
+class ImageMetadata(models.Model):
+    """
+    ImageMetadata model, keeps information about image which is on the firebase storage
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    image_name = models.CharField(max_length=200)
+    download_token = models.CharField(max_length=36)
+    add_date = models.DateTimeField(auto_now=True)
+
+
 class Opinion(models.Model):
     """
     Opinion model, keeps information about recommendation opinions

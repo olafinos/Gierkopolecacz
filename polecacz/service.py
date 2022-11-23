@@ -2,9 +2,54 @@ from typing import Union
 
 from django.contrib.auth.models import User
 from django.http import Http404
+from pyrebase import pyrebase
 
-from polecacz.models import Game, SelectedGames, Recommendation, OwnedGames
+from polecacz.models import Game, SelectedGames, Recommendation, OwnedGames, ImageMetadata
 from django.db.models import Count, QuerySet, Q
+from gierkopolecacz.settings import storage_config
+
+
+class ImageMetadataService:
+
+    @staticmethod
+    def get_image_metadata_objects_for_user_and_game(user: User, game_id: str) -> ImageMetadata:
+        return ImageMetadata.objects.filter(game=game_id, user=user).all()
+
+    @staticmethod
+    def get_user_images_names_with_tokens_added_to_game(user: str, game_id: str) -> list[tuple[str, str]]:
+        user_images = ImageMetadata.objects.filter(user=user, game=game_id).all()
+        return [(user_image.image_name, user_image.download_token) for user_image in user_images]
+
+    @staticmethod
+    def get_game_images_with_tokens(game_id: str) -> list[tuple[str, str]]:
+        game_images = ImageMetadata.objects.filter(game=game_id).all()
+        return [(game_image.image_name, game_image.download_token) for game_image in game_images]
+
+    @staticmethod
+    def get_token(user: User, game_id: str, image_name: str) -> str:
+        image_metadata = ImageMetadata.objects.filter(game=game_id, user=user, image_name=image_name).first()
+        return image_metadata.download_token
+
+    @staticmethod
+    def get_image_metadata_object(user: User, game_id: str, image_name: str) -> ImageMetadata:
+        return ImageMetadata.objects.filter(game=game_id, user=user, image_name=image_name).first()
+
+
+class FirebaseStorageService:
+
+    def __init__(self):
+        self.firebase = pyrebase.initialize_app(storage_config)
+        self.storage = self.firebase.storage()
+
+    def insert_image(self, image_path: str, storage_path: str) -> dict:
+        response = self.storage.child(storage_path).put(image_path)
+        return response
+
+    def get_url_for_image(self, storage_path: str, token: str) -> str:
+        return self.storage.child(storage_path).get_url(token)
+
+    def remove_image(self, storage_path: str, token: str) -> dict:
+        return self.storage.child(storage_path).delete(storage_path, token)
 
 
 class GameService:

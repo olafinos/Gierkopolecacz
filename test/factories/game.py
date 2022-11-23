@@ -1,5 +1,3 @@
-import factory
-
 import factory.fuzzy
 
 from polecacz.models import Game
@@ -28,3 +26,4 @@ class GameFactory(factory.django.DjangoModelFactory):
 
         if extracted:
             self.tags.add(*extracted)
+
