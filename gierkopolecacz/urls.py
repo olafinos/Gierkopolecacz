@@ -26,4 +26,5 @@ urlpatterns = [
     path("signup/", SignupView.as_view(), name="signup"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("activate/<uidb64>/<token>/", ActivateView.as_view(), name="activate"),
+    path("", include("pwa.urls"))
 ]
