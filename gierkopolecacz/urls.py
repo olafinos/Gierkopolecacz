@@ -1,3 +1,4 @@
+urls
 """gierkopolecacz URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -19,8 +20,8 @@ from django.urls import path, include
 from .views import SignupView, LogoutView, ActivateView
 
 urlpatterns = [
-    path("polecacz/", include("polecacz.urls")),
     path("", lambda req: redirect("/polecacz/")),
+    path("polecacz/", include("polecacz.urls")),
     path("admin/", admin.site.urls),
     path("", include("django.contrib.auth.urls")),
     path("signup/", SignupView.as_view(), name="signup"),

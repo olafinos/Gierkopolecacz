@@ -1,3 +1,4 @@
+settings.py
 """
 Django settings for gierkopolecacz project.
 
@@ -25,7 +26,7 @@ PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'static/js', 'serviceworker.js'
 SECRET_KEY = "django-insecure-28j!9aq*r(-ll^*k8uqv-)ev#g$#b^1w#()okq^u9knll)0%u2"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'gierkopolecacz.herokuapp.com']
 
@@ -132,7 +133,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "root")
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
@@ -148,7 +149,7 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_FROM = "horyzont2022bgg@gmail.com"
 EMAIL_HOST_USER = "horyzont2022bgg@gmail.com"
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", 'None')
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", '')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
@@ -158,6 +159,7 @@ LOGIN_REDIRECT_URL = "polecacz:index"
 LOGOUT_REDIRECT_URL = "polecacz:index"
 
 storage_config = {
+
 }
 # PWA
 
@@ -168,23 +170,23 @@ PWA_APP_BACKGROUND_COLOR = '#ffffff'
 PWA_APP_DISPLAY = 'standalone'
 PWA_APP_SCOPE = '/'
 PWA_APP_ORIENTATION = 'any'
-PWA_APP_START_URL = '/'
+PWA_APP_START_URL = '/polecacz'
 PWA_APP_STATUS_BAR_COLOR = 'default'
 PWA_APP_ICONS = [
 	{
-		'src': 'static/image/icon-160x160.png',
+		'src': '/static/image/icon-160x160.png',
 		'sizes': '160x160'
 	}
 ]
 PWA_APP_ICONS_APPLE = [
 	{
-		'src': 'static/image/icon-160x160.png',
+		'src': '/static/image/icon-160x160.png',
 		'sizes': '160x160'
 	}
 ]
 PWA_APP_SPLASH_SCREEN = [
 	{
-		'src': 'static/image/icon.png',
+		'src': '/static/image/icon.png',
 		'media': '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)'
 	}
 ]
