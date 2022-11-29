@@ -61,16 +61,15 @@ class GameDetailView(LoginRequiredMixin, generic.DetailView):
         user = self.request.user
         game = GameService.get_game_by_id(self.kwargs["pk"])
         user_images = ImageMetadataService.get_image_metadata_objects_for_user_and_game(user=user, game_id=game.id)
-        urls_to_user_images = [(firebase_storage.get_url_for_image(storage_path=f"images/{game.id}/{user.username}/{user_image.image_name}", token=user_image.download_token), user_image) for user_image in user_images]
+        urls_to_user_images = [(firebase_storage.get_url_for_image(storage_path=f"images/{game.id}/{user.username}/{user_image.image_name}",
+                                                                   token=user_image.download_token), user_image) for user_image in user_images]
         game_images = ImageMetadataService.get_game_images_with_tokens(game_id=game.id)
-        urls_to_game_images = [firebase_storage.get_url_for_image(storage_path=f"images/{game.id}/{user.username}/{game_image[0]}", token=game_image[1]) for
-                               game_image in game_images]
+        urls_to_game_images = [firebase_storage.get_url_for_image(storage_path=f"images/{game.id}/{user.username}/{game_image[0]}",
+                                                                  token=game_image[1]) for game_image in game_images]
         try:
             context['urls_to_user_images'] = urls_to_user_images
             context['urls_to_game_images'] = urls_to_game_images
-            context[
-                "selected_game"
-            ] = game in SelectedGamesService.get_user_selected_games(user=user)
+            context["selected_game"] = game in SelectedGamesService.get_user_selected_games(user=user)
             context["owned_game"] = game in OwnedGamesService.get_user_owned_games(user=user)
         except SelectedGames.DoesNotExist:
             context["selected_game"] = False
